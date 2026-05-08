@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Expense Splitter 💰
 
 A comprehensive Flutter application for splitting bills and expenses among friends, designed for trips, meals, and shared costs. This app provides real-world expense tracking with advanced features like categories, search, filters, and persistent data storage.
@@ -408,3 +409,7 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 Built with ❤️ using Flutter. Happy splitting!
+=======
+# Expense-splitter
+A trip-based expense splitter app with diary-style 
+>>>>>>> bc4e6ef7d9ca9376e708ff06c026e655d236faad
