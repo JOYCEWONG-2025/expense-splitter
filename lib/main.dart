@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fl_chart/fl_chart.dart';
+import 'world_home.dart';
 
 const List<String> expenseCategories = [
   'Food',
@@ -248,7 +249,20 @@ class _MyAppState extends State<MyApp> {
       home: Builder(
         builder: (context) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Expense Splitter 💰')),
+            appBar: AppBar(title: const Text('Expense Splitter 💰'),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.pets),
+                onPressed: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (context) => const WorldHome(),
+                  ),
+                );
+                },
+              ),
+            ],
+            ),
             body: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Column(
