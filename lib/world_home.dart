@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'world_scene.dart';
 
 class WorldHome extends StatefulWidget {
   const WorldHome({super.key});
@@ -16,35 +17,50 @@ class _WorldHomeState extends State<WorldHome> {
       "title": "Food World 🍔",
       "desc": "Track your meals & snacks",
       "image": "assets/backgrounds/food.jpg",
+      "emotion": "happy",
     },
     {
       "title": "Transport World 🚗",
       "desc": "Travel & commute expenses",
       "image": "assets/backgrounds/transport.jpeg",
+      "emotion": "fast",
     },
     {
       "title": "Shopping World 🛍️",
       "desc": "All your shopping spending",
       "image": "assets/backgrounds/shopping.jpg",
+      "emotion": "excited",
     },
     {
       "title": "Accommodation World 🏨",
       "desc": "Stay & lodging costs",
       "image": "assets/backgrounds/Accomo.jpg",
+      "emotion": "calm",
     },
     {
       "title": "Trip World ✈️",
       "desc": "Travel adventures & trips",
       "image": "assets/backgrounds/trip.jpeg",
+      "emotion": "adventure",
     },
     {
       "title": "Others 🌈",
       "desc": "Custom / uncategorized expenses",
       "image": "assets/backgrounds/others.jpg",
+      "emotion": "random",
     },
   ];
 
   double currentPage = 0;
+
+  // 🟢 ADD THIS HERE ↓↓↓
+  double pageOffset(int index) {
+    return (currentPage - index).abs();
+  }
+
+  String getEmotion(int index) {
+    return worlds[index]["emotion"] ?? "calm";
+  }
 
   @override
   void initState() {
@@ -93,7 +109,6 @@ class _WorldHomeState extends State<WorldHome> {
             Expanded(
               child: Stack(
                 children: [
-
                   // 🌍 WORLD SWIPER (UNCHANGED LOGIC)
                   PageView.builder(
                     controller: _controller,
@@ -112,7 +127,7 @@ class _WorldHomeState extends State<WorldHome> {
                             value = (index == 0) ? 0 : 1;
                           }
 
-                          value = (1 - (value.abs() * 0.45)).clamp(0.65, 1.0);
+                          value = (1 - (value.abs() * 0.5)).clamp(0.6, 1.0);
 
                           return Center(
                             child: Transform(
@@ -121,9 +136,13 @@ class _WorldHomeState extends State<WorldHome> {
                                 ..setEntry(3, 2, 0.001)
                                 ..scale(value)
                                 ..rotateY((1 - value) * -0.6),
-                              child: Opacity(
-                                opacity: value,
-                                child: buildWorldCard(worlds[index]),
+                              child: Transform.translate(
+                                offset: Offset(0, value < 0.8 ? 20 : 0),
+
+                                child: Opacity(
+                                  opacity: value,
+                                  child: buildWorldCard(worlds[index]),
+                                ),
                               ),
                             ),
                           );
@@ -133,22 +152,37 @@ class _WorldHomeState extends State<WorldHome> {
                   ),
 
                   // 🐰 GLOBAL RABBIT (ONLY ONE SYSTEM)
-                  Positioned(
+                  AnimatedPositioned(
+                    duration: const Duration(milliseconds: 250),
+                    curve: Curves.easeOut,
+
                     bottom: 20,
-
-                    // smooth world-to-world movement
-                    left: currentPage *
+                    left:
+                        (currentPage / (worlds.length - 1)) *
                         screenWidth *
-                        0.65 /
-                        (worlds.length - 1),
+                        0.65,
 
-                    child: SizedBox(
-                      height: 140,
-                      width: 140,
-                      child: Lottie.asset(
-                        "assets/rabbits/Rabbit Kick Scooter.json",
-                        fit: BoxFit.contain,
-                        repeat: true,
+                    child: Transform.scale(
+                      scale: getEmotion(currentPage.round()) == "excited"
+                          ? 1.1
+                          : getEmotion(currentPage.round()) == "fast"
+                          ? 1.0
+                          : getEmotion(currentPage.round()) == "happy"
+                          ? 1.05
+                          : 0.98,
+
+                      child: AnimatedContainer(
+                        duration: const Duration(milliseconds: 300),
+
+                        child: SizedBox(
+                          height: 140,
+                          width: 140,
+                          child: Lottie.asset(
+                            "assets/rabbits/Rabbit Kick Scooter.json",
+                            fit: BoxFit.contain,
+                            repeat: true,
+                          ),
+                        ),
                       ),
                     ),
                   ),
@@ -176,6 +210,10 @@ class _WorldHomeState extends State<WorldHome> {
           image: DecorationImage(
             image: AssetImage(world["image"]!),
             fit: BoxFit.cover,
+            alignment: Alignment(
+              (currentPage - worlds.indexOf(world)) * 0.2,
+              0,
+            ),
           ),
           boxShadow: const [
             BoxShadow(
@@ -211,7 +249,6 @@ class _WorldHomeState extends State<WorldHome> {
                 // 🧠 IMPORTANT FIX:
                 // ❌ removed AnimatedContainer rabbit here
                 // ✔ rabbit is now ONLY global (Stack level)
-
                 const SizedBox(height: 30),
 
                 Text(
@@ -247,7 +284,17 @@ class _WorldHomeState extends State<WorldHome> {
                         borderRadius: BorderRadius.circular(18),
                       ),
                     ),
-                    onPressed: () {},
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => WorldScene(
+                            title: world["title"]!,
+                            image: world["image"]!,
+                          ),
+                        ),
+                      );
+                    },
                     child: const Text(
                       "Enter World ✨",
                       style: TextStyle(
