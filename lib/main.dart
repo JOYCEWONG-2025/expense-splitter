@@ -6,13 +6,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fl_chart/fl_chart.dart';
 import 'world_home.dart';
+import 'package:lottie/lottie.dart';
 
 const List<String> expenseCategories = [
   'Food',
   'Transport',
   'Shopping',
   'Accommodation',
-  'Other',
+  'Others',
 ];
 
 class Group {
@@ -249,105 +250,135 @@ class _MyAppState extends State<MyApp> {
       home: Builder(
         builder: (context) {
           return Scaffold(
-            appBar: AppBar(title: const Text('Expense Splitter 💰'),
-            actions: [
-              IconButton(
-                icon: const Icon(Icons.pets),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (context) => const WorldHome(),
-                  ),
-                );
-                },
-              ),
-            ],
+            appBar: AppBar(
+              title: const Text('Expense Splitter 💰'),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.pets),
+                  onPressed: () {
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const WorldHome(),
+                      ),
+                    );
+                  },
+                ),
+              ],
             ),
-            body: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  const Text(
-                    '💰 Expense Splitter',
-                    style: TextStyle(fontSize: 28, fontWeight: FontWeight.bold),
-                  ),
-                  const SizedBox(height: 20),
-                  ElevatedButton(
-                    onPressed: () => showAddGroupDialog(context),
-                    child: const Text('➕ Create Group'),
-                  ),
-                  const SizedBox(height: 30),
-                  const Text(
-                    'Your Groups',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 10),
-                  Expanded(
-                    child: isLoading
-                        ? const Center(child: CircularProgressIndicator())
-                        : groups.isEmpty
-                        ? const Center(
-                            child: Text(
-                              'No groups yet. Tap Create Group to add one.',
-                              textAlign: TextAlign.center,
-                            ),
-                          )
-                        : ListView.builder(
-                            itemCount: groups.length,
-                            itemBuilder: (context, index) {
-                              final group = groups[index];
-                              return Dismissible(
-                                key: Key('group-$index'),
-                                direction: DismissDirection.endToStart,
-                                background: Container(
-                                  color: Colors.red,
-                                  alignment: Alignment.centerRight,
-                                  padding: const EdgeInsets.only(right: 16.0),
-                                  child: const Icon(
-                                    Icons.delete,
-                                    color: Colors.white,
-                                  ),
+            body: Stack(
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      const Text(
+                        '💰 Expense Splitter',
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      const SizedBox(height: 20),
+                      ElevatedButton(
+                        onPressed: () => showAddGroupDialog(context),
+                        child: const Text('➕ Create Group'),
+                      ),
+                      const SizedBox(height: 30),
+                      const Text(
+                        'Your Groups',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w600,
+                        ),
+                      ),
+                      const SizedBox(height: 10),
+                      Expanded(
+                        child: isLoading
+                            ? const Center(child: CircularProgressIndicator())
+                            : groups.isEmpty
+                            ? const Center(
+                                child: Text(
+                                  'No groups yet. Tap Create Group to add one.',
+                                  textAlign: TextAlign.center,
                                 ),
-                                onDismissed: (_) => deleteGroup(index),
-                                child: ListTile(
-                                  title: Text(group.name),
-                                  onTap: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (context) => GroupDetailPage(
-                                          group: group,
-                                          onRename: (newName) =>
-                                              updateGroup(index, newName),
-                                          onUpdate: _saveGroups,
-                                        ),
+                              )
+                            : ListView.builder(
+                                itemCount: groups.length,
+                                itemBuilder: (context, index) {
+                                  final group = groups[index];
+                                  return Dismissible(
+                                    key: Key('group-$index'),
+                                    direction: DismissDirection.endToStart,
+                                    background: Container(
+                                      color: Colors.red,
+                                      alignment: Alignment.centerRight,
+                                      padding: const EdgeInsets.only(
+                                        right: 16.0,
                                       ),
-                                    );
-                                  },
-                                  trailing: Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit),
-                                        onPressed: () =>
-                                            showEditGroupDialog(context, index),
-                                        tooltip: 'Edit group',
+                                      child: const Icon(
+                                        Icons.delete,
+                                        color: Colors.white,
                                       ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete),
-                                        onPressed: () => deleteGroup(index),
-                                        tooltip: 'Delete group',
+                                    ),
+                                    onDismissed: (_) => deleteGroup(index),
+                                    child: ListTile(
+                                      title: Text(group.name),
+                                      onTap: () {
+                                        Navigator.push(
+                                          context,
+                                          MaterialPageRoute(
+                                            builder: (context) =>
+                                                GroupDetailPage(
+                                                  group: group,
+                                                  onRename: (newName) =>
+                                                      updateGroup(
+                                                        index,
+                                                        newName,
+                                                      ),
+                                                  onUpdate: _saveGroups,
+                                                ),
+                                          ),
+                                        );
+                                      },
+                                      trailing: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          IconButton(
+                                            icon: const Icon(Icons.edit),
+                                            onPressed: () =>
+                                                showEditGroupDialog(
+                                                  context,
+                                                  index,
+                                                ),
+                                            tooltip: 'Edit group',
+                                          ),
+                                          IconButton(
+                                            icon: const Icon(Icons.delete),
+                                            onPressed: () => deleteGroup(index),
+                                            tooltip: 'Delete group',
+                                          ),
+                                        ],
                                       ),
-                                    ],
-                                  ),
-                                ),
-                              );
-                            },
-                          ),
+                                    ),
+                                  );
+                                },
+                              ),
+                      ),
+                    ],
                   ),
-                ],
-              ),
+                ),
+
+                Positioned(
+                  bottom: 20,
+                  right: 20,
+                  child: SizedBox(
+                    width: 120,
+                    child: Lottie.asset("assets/rabbits/bunny_hop.json"),
+                  ),
+                ),
+              ],
             ),
           );
         },
@@ -605,7 +636,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
         return Colors.purple;
       case 'Accommodation':
         return Colors.green;
-      case 'Other':
+      case 'Others':
         return Colors.grey;
       default:
         return Colors.grey;

@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Expense Splitter 💰
 
 A comprehensive Flutter application for splitting bills and expenses among friends, designed for trips, meals, and shared costs. This app provides real-world expense tracking with advanced features like categories, search, filters, and persistent data storage.
@@ -226,10 +225,24 @@ The app was built iteratively in phases, starting from basic functionality and a
 **Root Cause**: `showDialog` was called with a context that was above `MaterialApp`, so the dialog could not access `MaterialLocalizations`.
 **Solution**: Wrapped `MaterialApp.home` in a `Builder` and used the inner context for dialog calls. Also kept `flutter_localizations` configured with `localizationsDelegates` and `supportedLocales`.
 
+### VS Code Flutter Plugin Error (Windows)
+**Error:**
+**Fix:**
+Enable Developer Mode
+
+
 ### Analytics Dialog Render Error
 **Problem**: The analytics popup could fail with chart rendering errors, layout exceptions, or blank dialog behavior.
 **Root Cause**: `fl_chart` widgets were rendered inside dialog content without explicit sizing and without guarding against zero total data, which caused layout and render box issues.
 **Solution**: Switched analytics to use `Dialog` with a `ConstrainedBox`, fixed heights for charts, and added guards to render charts only when valid expense data exists.
+
+### RenderFlex Overflow (8px bottom overflow)
+**Cause:**
+- Column inside ListTile trailing exceeded height
+
+**Fix:**
+- Wrapped Column with SizedBox
+- Added mainAxisSize: MainAxisSize.min
 
 ### UI Not Updating After Member Addition
 **Problem**: Adding members didn't refresh the UI immediately.
@@ -303,6 +316,28 @@ The app was built iteratively in phases, starting from basic functionality and a
 - **Analytics dialog rendering**: Chart widgets need explicit sizing and zero-data guards to avoid render-box exceptions.
 - **DropdownButtonFormField API**: Older Flutter versions use `value`; current best practice is `initialValue`.
 
+## 🧠 Problem-solving: Handling edge cases, tricky decisions, and unexpected issues
+Branch confusion (main vs rabbit-ui)
+The project had two active branches: main (stable version) and rabbit-ui (UI development).
+At times, it was unclear which branch contained the latest working version.
+Avoiding accidental data loss
+Before making any changes, I checked the repository state using git status and git log.
+Confirmed there were no uncommitted changes in VSCode to prevent overwriting work.
+Safe syncing with GitHub
+Used git fetch --all to update remote branch information without modifying local files.
+Pulled updates separately for each branch instead of pulling everything at once.
+Branch-by-branch update strategy
+Updated main and rabbit-ui individually:
+git checkout main && git pull origin main
+git checkout rabbit-ui && git pull origin rabbit-ui
+Ensured each branch stayed consistent with its GitHub version.
+Preventing merge mistakes
+Avoided merging branches too early to reduce risk of conflicts.
+Kept development isolated in rabbit-ui while main remained stable.
+Key learning
+Git branches represent separate versions of the project, not a combined workspace.
+Always verify branch state before pulling or switching to avoid confusion and potential overwrites.
+
 ## 📦 Installation
 
 ### Prerequisites
@@ -372,6 +407,139 @@ The app was built iteratively in phases, starting from basic functionality and a
 
 **Workflow Overview**: Homepage features a rabbit sliding on a skateboard across category backgrounds (Food with food icons, Transport with roads, etc.). User selects category → Calendar popup for date selection → Rabbit "arrives" at date → Group creation dialog with rabbits forming a circle (assign names to rabbits/people) → Expense addition with receipt unfolding animation (description, amount, payer, split checkboxes with rabbit names, image upload) → Analytics with animated charts → Settle-up with visual payments → Diary summary as flipped calendar book with expense cards and feedback (e.g., "Smart saver!" or "Oh no, big spender!").
 
+# 🌟 NEW ADDITIONS (YOUR GAME / DIARY VISION)
+
+## 🎮 FUTURE: Gamified Expense Diary System (Rabbit World UI)
+
+This project is evolving into a **game-like financial diary app**.
+
+---
+
+## 🐰 1. Animated Homepage (Rabbit World)
+
+- Rabbit slides on skateboard across categories:
+  - 🍔 Food
+  - 🚗 Transport
+  - 🛍 Shopping
+  - 🏨 Accommodation
+  - ✈ Trip
+
+Each category includes:
+- Themed animated background
+- Smooth transitions (PageView)
+- Cute UI storytelling
+
+---
+
+## 📅 2. Calendar Story Mode
+
+- User selects a date
+- Rabbit “travels” to that date
+- App becomes a diary timeline
+- Each day is a story chapter
+
+---
+
+## 👥 3. Group Creation (Rabbit Interaction Scene)
+
+- Rabbits represent users in a group
+- Users assign names to rabbits
+- Rabbits form a circle = expense group creation animation
+
+---
+
+## 🧾 4. Animated Receipt System
+
+- Receipt unfolds like paper animation
+- Inside form:
+  - Description
+  - Amount
+  - Paid by
+  - Split among (checkbox rabbit names)
+  - Receipt image upload
+
+---
+
+## 📊 5. Analytics Scene (Animated)
+
+- Pie chart + bar chart with smooth transitions
+- Category spending breakdown
+- Member spending visualization
+
+---
+
+## 💸 6. Settle-Up Animation
+
+- Visual payment flow
+- Who pays who shown as animated flow lines
+
+---
+
+## 📖 7. Diary Summary System
+
+- Flipped calendar book UI
+- Each day = expense story card
+- Feedback messages:
+  - “Smart saver 💚”
+  - “High spender ⚠️”
+
+---
+
+## 🧠 Design Approach
+
+- Keep logic separated from animation layer
+- Use lightweight animations (Lottie preferred)
+- Avoid heavy 3D (for performance)
+- Build UI in layers (core → visuals → game layer)
+
+---
+
+## 🧪 Implementation Roadmap
+
+### Phase 1: UI Upgrade
+- PageView homepage
+- Category screens
+
+### Phase 2: Animation Layer
+- Rabbit Lottie animation
+- Background transitions
+
+### Phase 3: Story System
+- Calendar navigation
+- Day-based routing
+
+### Phase 4: Receipt Animation
+- Animated receipt UI
+
+### Phase 5: Gamification Layer
+- Rabbit interactions
+- Rewards & feedback system
+
+---
+
+## 📱 Platform Support (IMPORTANT)
+
+### Currently running on:
+- 🌐 Web (Chrome)
+
+### Also supported by Flutter:
+- 📱 Android
+- 🍎 iOS
+- 💻 Windows / Mac / Linux
+
+---
+
+## 📲 Can I run it on mobile?
+
+YES — 100% possible.
+
+### To run on Android:
+1. Install Android Studio
+2. Connect phone OR use emulator
+3. Run:
+```bash
+flutter run
+
 **Functionality**: Solves the problem by making expense tracking engaging and visual, like a game/diary. Core logic (groups, expenses, balances) remains unchanged; adds animations and themes for better UX without breaking features. Works on web/mobile with lightweight assets.
 
 **Code Quality**: Clean, readable additions using Flutter best practices. New classes (`AnimatedHomepage`, `DiarySummaryPage`) are modular. Uses `Lottie` for animations, `Builder` for context fixes. No breaking changes – integrates seamlessly.
@@ -381,12 +549,443 @@ The app was built iteratively in phases, starting from basic functionality and a
 **Communication**: Built this to make the app more fun and memorable, like a Disney storybook. Choices: Lottie for smooth rabbit animations, receipt unfolding for intuitive expense entry, calendar flip for diary feel. With more time, I'd add voice narration or haptic feedback for full immersion.
 
 **Implementation Steps**:
-1. **Assets**: Add `lottie: ^3.0.0` to `pubspec.yaml`. Download Lottie JSONs (rabbit_walk.json, receipt_unfold.json) from LottieFiles. Add PNG backgrounds (food_bg.png, etc.) from free sources like Unsplash/OpenGameArt.
+1. **Assets**: Add `lottie: ^3.0.0` to `pubspec.yaml`. Download Lottie JSONs (rabbit_walk.json, receipt_unfold.json) from LottieFiles. Add PNG backgrounds (food.png, etc.) from free sources like Unsplash/OpenGameArt.
 2. **Homepage Animation**: Replace `Scaffold` body in `_MyAppState.build` (line ~250) with `AnimatedHomepage` class using `AnimatedPositioned` for rabbit sliding and `AnimatedSwitcher` for backgrounds.
 3. **Calendar & Group Creation**: Add `_showCalendarDialog` method; enhance `showAddGroupDialog` with Lottie rabbits.
 4. **Expense Receipt**: Modify `_showAddExpenseDialog` to use `Dialog` with Lottie unfolding; add rabbit-named checkboxes and image upload.
 5. **Analytics & Settle-Up**: Wrap charts in `AnimatedOpacity`; add animations to settlement cards.
 6. **Diary Summary**: New `DiarySummaryPage` with `PageView` for book flip, animated cards, and feedback logic.
+
+**Building & Testing**
+# 🐰 Expense Splitter – Gamified Diary Edition
+
+A gamified expense tracking app that combines:
+- 💰 Finance management
+- 🎮 Game-like UI experience
+- 🐰 Animated character storytelling
+- 📅 Diary/calendar-based expense journey
+
+---
+
+# 🚀 Project Vision
+
+Transform a traditional expense splitter into a:
+
+> 🎮 "Duolingo × Animal Crossing × Splitwise hybrid"
+
+Where users:
+- track expenses
+- interact with animated rabbit character
+- explore category “worlds”
+- experience calendar-based storytelling
+
+---
+
+# 🧱 Development Phases
+
+## 🟢 Phase 1 — Core System (COMPLETED)
+✔ Expense splitting system  
+✔ Group & member management  
+✔ Expense calculation  
+✔ Settle-up logic  
+✔ Analytics charts (fl_chart)  
+✔ Local storage (SharedPreferences)
+
+---
+
+## 🌍 Phase 2 — World UI System (IN PROGRESS)
+✔ Category-based home screen (PageView)
+- Food 🍔
+- Transport 🚗
+- Shopping 🛍️
+- Accommodation 🏨
+- Trip ✈️
+
+🛠️ Bugs & Fixes (Setup Issues Summary)
+WorldHome class not found
+Cause: File missing .dart extension or incorrect filename
+**Fix:**
+Rename file to world_home.dart
+Import correctly using import 'world_home.dart';
+Asset not found error
+Cause: Wrong asset path or mismatch between pubspec.yaml and actual folder structure
+Fix:
+Store images inside assets/images/
+Declare assets properly in pubspec.yaml
+Use correct path in code: AssetImage("assets/images/food.jpg")
+Duplicate flutter: key in pubspec.yaml
+Cause: Multiple flutter: sections in pubspec.yaml
+Fix:
+Keep only one flutter: block
+Place all assets under that single block
+YAML indentation error
+Cause: Incorrect spacing in pubspec.yaml
+Fix:
+Ensure proper indentation under flutter:
+Use consistent spacing for asset list entries
+Result after fixes
+App runs successfully
+Assets load correctly
+Navigation works properly
+World UI (PageView system) functions as expected
+
+🐞 Flutter Error Exceptions (World UI Setup)
+Asset loading failed (404 / unable to load image): Flutter Web showed Failed to fetch assets/assets/image/food.jpg and Unable to load asset: assets/image/food.jpg due to incorrect file path and mismatch between declared asset location and actual folder structure. The issue was caused by using inconsistent directories such as assets/image/ instead of assets/images/, and Flutter automatically duplicating the path into assets/assets/... when pubspec and code paths were mismatched. Fixed by ensuring correct structure assets/images/food.jpg, updating all AssetImage() references to assets/images/..., and declaring assets properly in pubspec.yaml.
+YAML parsing error (Expected a key while parsing block mapping): Flutter failed to compile pubspec.yaml due to incorrect indentation under the flutter: section. This happened when asset lines were not properly aligned or placed outside correct YAML hierarchy. Fixed by ensuring proper structure:
+flutter: → assets: → - assets/images/ with correct spacing.
+Duplicate mapping key error in pubspec.yaml: Build failed because multiple flutter: keys were declared in pubspec.yaml, causing YAML conflict. This occurred when assets were added in a new section instead of merging into the existing Flutter configuration. Fixed by keeping only one flutter: block and combining all asset declarations under it.
+Class not found error (WorldHome isn’t a class): Flutter could not recognize WorldHome due to incorrect import file naming or missing .dart extension in import statement. This happened when the file was referenced as import 'world_home'; instead of import 'world_home.dart';. Fixed by ensuring correct Dart file import syntax and proper file naming.
+App not updating after fixes (old UI still showing / no image changes): Changes were not reflected because Flutter hot reload does not fully rebuild asset bundles. The app still used cached build data. Fixed by performing full restart using flutter clean, flutter pub get, and flutter run.
+
+🔜 Next:
+- Add background themes per category
+- Add swipe animations
+- Add entry button per world
+
+🌍 Building the Swipeable Rabbit World UI
+Step 1 — Convert Static Page into Swipeable PageView
+Before
+body: Container(
+Replace with
+body: PageView.builder(
+  controller: _controller,
+  itemCount: worlds.length,
+)
+Purpose
+Enable horizontal world swiping
+Transform UI into game-style navigation
+Prepare for animated world transitions
+Step 2 — Add PageController
+Add this inside _WorldHomeState
+final PageController _controller =
+    PageController(viewportFraction: 0.78);
+Purpose
+Show partial side cards
+Create cinematic carousel effect
+Mimic Disney/game launcher UI
+Step 3 — Convert Single World into Dynamic Worlds List
+Before
+Food World only
+Replace with
+final List<Map<String, String>> worlds = [
+  {
+    "title": "Food World 🍔",
+    "image": "assets/images/food.jpg",
+  },
+];
+Purpose
+Support multiple worlds
+Reusable category system
+Easier future expansion
+Step 4 — Create Reusable World Card
+Added
+Widget buildWorldCard(Map<String, String> world)
+Purpose
+Modular UI structure
+Cleaner code
+Reusable animated cards
+Step 5 — Add AnimatedBuilder
+Added
+AnimatedBuilder(
+  animation: _controller,
+)
+Purpose
+Animate cards during swipe
+Enable smooth transitions
+Create focus effect
+Step 6 — Add Scaling Animation
+Added
+..scale(value)
+Purpose
+Center card becomes larger
+Side cards become smaller
+Creates depth illusion
+Step 7 — Add 3D Perspective Effect
+Added
+..setEntry(3, 2, 0.001)
+Purpose
+Simulate camera depth
+Add cinematic feeling
+Improve immersion
+Step 8 — Add Tilt Rotation Effect
+Added
+..rotateY((1 - value) * -0.6)
+Purpose
+Create smooth card tilt
+Simulate 3D carousel
+Improve swipe realism
+Step 9 — Add Opacity Transition
+Added
+Opacity(
+  opacity: value,
+)
+Purpose
+Fade side cards slightly
+Focus attention on center card
+Improve visual hierarchy
+Step 10 — Improve Card Responsiveness
+Before
+Container(
+Replace with
+FractionallySizedBox(
+  widthFactor: 0.92,
+)
+Purpose
+Prevent narrow stretched cards
+Better mobile responsiveness
+More cinematic proportions
+Step 11 — Add Gradient Overlay
+Added
+gradient: LinearGradient(
+  colors: [
+    Colors.transparent,
+    Colors.black.withOpacity(0.85),
+  ],
+)
+Purpose
+Improve text readability
+Add movie-poster feeling
+Blend UI with background image
+Step 12 — Add Rabbit Placeholder + Enter Button
+Added
+Icon(Icons.pets)
+
+and
+
+ElevatedButton(
+  child: Text("Enter World ✨"),
+)
+Purpose
+Prepare for future rabbit animation
+Create game-like interaction flow
+🛠 Asset Setup Tutorial
+Folder Structure
+Correct Structure
+assets/
+ └── images/
+      ├── food.jpg
+      ├── transport.jpeg
+      ├── shopping.jpg
+pubspec.yaml Setup
+Add
+flutter:
+  assets:
+    - assets/images/
+Then run
+flutter pub get
+
+⚠️ Errors & Fixes
+Error 1 — Asset Not Found
+Error
+Unable to load asset
+HTTP status 404
+Cause
+Wrong image path
+Wrong folder name
+Wrong extension
+Fix
+
+Replace:
+
+assets/food.jpg
+
+with:
+
+assets/images/food.jpg
+Error 2 — Duplicate flutter: Key
+Error
+Duplicate mapping key: flutter
+Cause
+
+Multiple:
+
+flutter:
+
+sections inside pubspec.yaml
+
+Fix
+
+Keep only ONE:
+
+flutter:
+Error 3 — YAML Parsing Error
+Error
+Expected a key while parsing a block mapping
+Cause
+
+Wrong indentation in YAML
+
+Wrong
+flutter:
+assets:
+Correct
+flutter:
+  assets:
+Error 4 — WorldHome Isn't a Class
+Error
+The name 'WorldHome' isn't a class
+Cause
+
+Missing .dart extension
+
+Wrong
+import 'world_home';
+Correct
+import 'world_home.dart';
+Error 5 — Transform Syntax Error
+Error
+alignment:
+
+showed error unexpectedly.
+
+Cause
+
+Missing comma after:
+
+..rotateY(...)
+Fix
+..rotateY((1 - value) * -0.8),
+Error 6 — Chinese Comma Bug
+Error Cause
+
+Used:
+
+，
+
+instead of:
+
+,
+Fix
+
+Replace all Chinese punctuation with English punctuation.
+
+Error 7 — PageController Crash
+Error
+scroll_controller.dart assertion failed
+Cause
+
+Unsafe access:
+
+_controller.page!
+
+when page was not ready.
+
+Safer Fix
+Replace
+value = _controller.page! - index;
+With
+value = (_controller.page ?? 0) - index;
+
+Additional Safety Check
+
+Added
+if (_controller.hasClients &&
+    _controller.position.haveDimensions)
+Purpose
+
+Prevents:
+
+mobile resize crashes
+hot reload crashes
+null page crashes
+layout assertion failures
+Step 13 — Dispose Controller Properly
+Added
+@override
+void dispose() {
+  _controller.dispose();
+  super.dispose();
+}
+Purpose
+Prevent memory leaks
+Prevent scroll controller issues
+Improve animation stability
+🚀 Current Achievement
+
+✅ Swipeable cinematic category worlds
+✅ 3D animated carousel
+✅ Disney-style UI direction
+✅ Responsive world cards
+✅ Game-style navigation structure
+✅ Rabbit animation placeholder system
+✅ Future-ready architecture for:
+
+rabbit animation
+diary/calendar system
+receipt unfolding UI
+story mode
+analytics integration
+settle-up interaction system
+
+---
+
+## 🐰 Phase 3 — Rabbit Animation Layer (UPCOMING)
+- Add animated rabbit character
+- Rabbit moves between categories
+- Simple Lottie/Rive animation integration
+- UI reactions based on user actions
+
+---
+
+## 📅 Phase 4 — Calendar Story Mode
+- Add calendar timeline system
+- Tap date → open “story session”
+- Rabbit enters daily expense chapter
+- Auto-generated diary-style summary
+
+---
+
+## 🧾 Phase 5 — Receipt Interaction System
+- Animated receipt unfolding UI
+- Add expense form inside animation
+- Image upload (receipt scanning style)
+- Smooth expand/collapse transitions
+
+---
+
+## 📊 Phase 6 — Analytics + Gamification
+✔ Existing charts enhanced with:
+- spending feedback messages
+- “saver score”
+- category insights
+
+---
+
+## 🎮 Phase 7 — Full Gamified Experience
+- Rabbit reacts emotionally
+- Sound effects (optional)
+- Smooth scene transitions
+- Parallax backgrounds
+- Game-like navigation flow
+
+---
+
+# 🧠 Technical Stack
+- Flutter
+- SharedPreferences
+- fl_chart
+- PageView animations
+- Lottie / Rive (future)
+- Material Design UI
+
+---
+
+# ⚠️ Design Philosophy
+
+This project prioritizes:
+- Clean structure first
+- Then animation layer
+- Then gamification
+
+NOT a full game immediately — but a progressive enhancement system.
+
+---
+
+# 🚀 Current Status
+
+🟢 Stable prototype completed  
+🟡 World UI system in development  
+🔵 Animation layer upcoming  
 
 - **Currency Support**: Multi-currency expenses with conversion
 - **Export/Import**: CSV export and import functionality
@@ -409,7 +1008,1697 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ---
 
 Built with ❤️ using Flutter. Happy splitting!
-=======
-# Expense-splitter
-A trip-based expense splitter app with diary-style 
->>>>>>> bc4e6ef7d9ca9376e708ff06c026e655d236faad
+
+🧠 You must build it in PHASES
+
+Because your idea is no longer a “simple Flutter app”.
+
+It’s becoming:
+
+animation system
+navigation system
+story system
+diary system
+finance logic system
+themed UI engine
+
+That’s why it feels difficult.
+
+🎯 THE FULL ROADMAP (REALISTIC VERSION)
+🌱 PHASE 1 — FOUNDATION (You are HERE now)
+Goal:
+
+Create the polished cinematic app structure.
+
+✅ Already done
+swipeable category worlds
+PageView navigation
+3D carousel direction
+expense system
+analytics
+settle-up logic
+rabbit-ui branch
+
+🎨 PHASE 2 — DISNEY HOMEPAGE EXPERIENCE
+Goal:
+
+Make homepage feel alive.
+
+🐰 Rabbit skateboard intro
+
+YES — this is VERY doable.
+
+What should happen:
+
+When app opens:
+
+rabbit slides across categories
+backgrounds move/parallax
+category worlds appear:
+🍔 Food world
+🚕 Transport world
+🛍️ Shopping world
+🏨 Accommodation world
+✈️ Trip world
+How to implement:
+Use:
+PageView
+AnimatedPositioned
+SlideTransition
+Lottie
+maybe Rive later
+🎬 HOMEPAGE STRUCTURE
+[Animated Background]
+        ↓
+[Rabbit skating across screen]
+        ↓
+[Category Cards / Buttons]
+        ↓
+[Swipe cinematic transition]
+🌎 CATEGORY WORLDS (VERY important)
+
+Each category should feel like a mini-world.
+
+🍔 Food
+
+Background:
+
+floating burgers
+ramen
+cafe lights
+warm orange lighting
+🚕 Transport
+
+Background:
+
+neon city
+roads
+moving signs
+train silhouettes
+🛍️ Shopping
+
+Background:
+
+shopping bags
+pastel mall style
+floating coins
+✈️ Trip
+
+Background:
+
+clouds
+airplane trails
+postcards
+🧠 IMPORTANT DESIGN ADVICE
+DO NOT:
+
+make fully animated heavy game maps.
+
+DO:
+
+use:
+
+layered PNG backgrounds
+subtle motion
+looping animations
+parallax effects
+
+This gives:
+✨ “Disney feeling”
+WITHOUT destroying performance.
+
+
+🏗️ Architecture Setup Phase
+
+🧠 models/
+
+Defines your data
+
+Example:
+
+Expense
+Person
+Category
+Group
+Receipt
+
+👉 This is your “brain structure”
+
+📱 screens/
+
+Full pages
+
+Example:
+
+Home (rabbit world)
+Category world page
+Calendar page
+Diary page
+Analytics page
+
+👉 This is your “world locations”
+
+🧩 widgets/
+
+Reusable UI pieces
+
+Example:
+
+category card
+rabbit animation widget
+receipt card
+expense tile
+
+👉 This is your “LEGO blocks”
+
+🎬 animations/
+
+All motion logic
+
+Example:
+
+rabbit slide animation
+page transition effects
+receipt unfolding animation
+
+👉 This is your “magic layer”
+
+🎨 assets/
+
+Images + animations
+
+Example:
+
+food background
+rabbit Lottie file
+icons
+illustrations
+
+👉 This is your “visual world”
+
+🎨 themes/
+
+App styling
+
+Example:
+
+Disney pastel theme
+category color system
+fonts
+
+👉 This is your “aesthetic identity”
+
+🔧 services/
+
+Logic layer (non-UI)
+
+Example:
+
+expense calculation
+split logic
+settlement algorithm
+data storage
+
+👉 This is your “engine”
+
+models      → characters/data
+screens     → worlds/maps
+widgets     → objects/items
+animations  → magic/movement
+assets      → textures/art
+themes      → visual style
+services    → game engine logic
+
+📅 PHASE 3 — STORY CALENDAR SYSTEM
+
+This is your BEST creative feature.
+
+🐰 Flow idea
+
+User taps:
+
+Food Category
+
+Then:
+
+Calendar opens
+
+Rabbit slides to:
+
+May 1
+
+Then:
+
+Diary page opens
+
+This is VERY possible in Flutter.
+
+🧩 HOW TO BUILD THIS
+DO NOT:
+
+make real physical rabbit movement simulation.
+
+DO:
+
+fake the illusion using:
+
+Hero animations
+SlideTransition
+AnimatedAlign
+Lottie sequence
+
+This is how professional apps do it too.
+
+👥 PHASE 4 — GROUP CREATION STORY
+
+This is honestly super cute and memorable.
+
+Scene:
+
+Rabbit meets other rabbits.
+
+Then:
+
+user assigns names
+each rabbit = one person
+circle formation animation
+
+This can be:
+
+VERY SIMPLE visually
+but FEEL magical
+🧾 PHASE 5 — RECEIPT UNFOLDING SYSTEM
+
+This is probably your BEST demo interaction.
+
+Animation flow
+crumpled receipt
+      ↓
+unfold animation
+      ↓
+expense form appears
+Implementation reality
+
+You do NOT need physics simulation.
+
+Instead:
+
+use animated PNG/Lottie
+scale + rotate + expand
+then reveal form fields
+Expense form inside receipt
+Expense title
+Amount
+Who paid
+Split among ☑
+Upload receipt image
+
+This is PERFECT UX for your theme.
+
+📊 PHASE 6 — ANALYTICS + SETTLE-UP HUB
+
+Keep this more clean and readable.
+
+Because:
+
+too much animation here = confusing
+charts need clarity
+
+So:
+✨ use themed UI
+BUT
+✔ keep charts professional
+
+📖 PHASE 7 — DIARY BOOK SYSTEM
+
+This is your FINAL “wow feature”.
+
+End-of-day summary
+
+Rabbit writes diary:
+
+"You spent RM120 today!"
+"You saved more on transport!"
+"Smart saver today 🌟"
+
+Then:
+
+calendar flips
+book animation
+records expense history
+
+This is VERY memorable for judges/users.
+
+🚨 BIGGEST WARNING (VERY IMPORTANT)
+Your danger:
+
+Trying to build EVERYTHING immediately.
+
+That is how projects collapse.
+
+🧠 YOUR REAL DEVELOPMENT ORDER
+✅ STAGE 1 (NOW)
+
+Polish homepage + category worlds
+
+✅ STAGE 2
+
+Add:
+
+rabbit intro animation
+background parallax
+smoother transitions
+✅ STAGE 3
+
+Build:
+
+calendar story flow
+date selection
+✅ STAGE 4
+
+Build:
+
+group creation
+rabbit avatars
+✅ STAGE 5
+
+Build:
+
+receipt unfolding form
+✅ STAGE 6
+
+Connect:
+
+analytics
+settle-up
+summaries
+✅ STAGE 7
+
+Build:
+
+diary book system
+emotional feedback system
+🎨 BEST TECHNOLOGIES FOR YOU
+🟢 MUST USE
+Flutter animations
+AnimatedContainer
+Hero
+TweenAnimationBuilder
+AnimatedPositioned
+🟢 BEST for cute animations
+Lottie
+
+Use for:
+
+rabbit
+coins
+receipts
+transitions
+🟣 LATER (advanced)
+Rive
+
+Use ONLY later for:
+
+interactive rabbit states
+smooth character control
+
+# ✨ Cinematic Gamified Expense Tracker
+
+A Disney-inspired expense splitting application built with Flutter, combining storytelling, animated UI, and collaborative finance tracking.
+
+## 🚀 Current Features
+
+* Swipeable cinematic category worlds
+* Animated PageView navigation
+* Expense splitting system
+* Settle-up calculator
+* Expense analytics and charts
+* Rabbit-themed gamified UI direction
+* Responsive animated homepage
+* Future-ready diary/calendar architecture
+
+## 🎮 Upcoming Features
+
+* Rabbit mascot animations
+* Story-driven calendar system
+* Interactive diary timeline
+* Receipt unfolding animation
+* Group rabbit avatar interaction
+* Emotional budgeting feedback
+* Disney-inspired themed worlds
+
+## 🛠 Tech Stack
+
+* Flutter
+* Dart
+* Lottie Animations
+* Animated PageView
+* Material 3
+
+## 🌟 Vision
+
+Transforming expense tracking into an emotional, diary-style storytelling experience through animation, gamification, and cinematic UI design.
+
+
+STEP 1 — Organize project structure
+
+FIRST do this before coding more.
+
+📁 Create folders
+
+Inside lib/
+
+Create:
+
+lib/
+ ├── models/
+ ├── screens/
+ ├── widgets/
+ ├── animations/
+ ├── assets/
+ ├── themes/
+ └── services/
+🎯 WHY
+
+You are entering animation-heavy architecture.
+
+Without structure:
+
+code becomes impossible later
+rabbit system becomes messy
+calendar flow becomes hard
+STEP 2 — Add animation packages
+
+In pubspec.yaml
+
+ADD:
+
+dependencies:
+  lottie: ^3.1.0
+  animations: ^2.0.11
+
+Then run:
+
+flutter pub get
+🎯 WHY
+
+You need:
+
+Lottie → rabbit animation
+animations package → smoother transitions
+STEP 3 — Create asset folders
+
+Inside project root:
+
+assets/
+ ├── backgrounds/
+ ├── lottie/
+ ├── icons/
+ ├── rabbits/
+STEP 4 — Register assets
+
+Inside pubspec.yaml
+
+ADD:
+
+flutter:
+  assets:
+    - assets/backgrounds/
+    - assets/lottie/
+    - assets/icons/
+    - assets/rabbits/
+STEP 5 — Download assets (VERY IMPORTANT)
+
+NOW do NOT code yet.
+
+FIRST collect visual assets.
+
+🎨 What you need NOW
+For homepage:
+Backgrounds
+
+Need:
+
+food world
+transport world
+shopping world
+accommodation world
+trip world
+
+Use:
+
+PNG
+illustration style
+Disney/pastel/cute
+🐰 Rabbit animation
+
+Download:
+
+skateboard rabbit
+idle rabbit
+happy rabbit
+
+Use:
+
+LottieFiles
+
+Search:
+
+cute rabbit
+cute character
+mascot animation
+STEP 6 — Homepage architecture redesign
+
+NOW your homepage structure changes.
+
+❌ OLD STRUCTURE
+PageView
+   ↓
+Card
+✅ NEW STRUCTURE
+Stack
+ ├── Animated Background
+ ├── Parallax Layer
+ ├── Rabbit Animation
+ ├── PageView
+ └── UI Overlay
+🎯 IMPLEMENT THIS USING
+Flutter widgets:
+Stack
+Positioned
+AnimatedPositioned
+TweenAnimationBuilder
+Hero
+AnimatedOpacity
+STEP 7 — Add parallax background movement
+
+THIS is what creates “Disney feeling”.
+
+🎬 What happens
+
+When user swipes:
+
+background shifts slowly
+rabbit shifts slightly
+foreground moves faster
+
+Creates:
+✨ cinematic depth illusion
+
+🎯 IMPLEMENT USING
+
+Use:
+
+Transform.translate
+
+based on:
+
+PageController.page
+STEP 8 — Add rabbit skateboard animation
+
+NOW add mascot.
+
+🐰 What rabbit does
+
+NOT:
+❌ full gameplay
+
+ONLY:
+✔ slides slightly
+✔ reacts to swipe
+✔ idle loop animation
+
+🎯 IMPLEMENT USING
+Lottie.asset()
+
+inside:
+
+Positioned()
+STEP 9 — Add category world cards
+
+NOW redesign category buttons.
+
+🎨 Each card should have:
+category title
+glowing button
+world preview
+slight hover animation
+soft blur/glass effect
+🎯 IMPLEMENT USING
+BackdropFilter
+AnimatedContainer
+ClipRRect
+STEP 10 — Create navigation flow
+
+NOW build actual user journey.
+
+🎬 FLOW
+Homepage
+   ↓
+Category Selected
+   ↓
+Calendar Timeline
+   ↓
+Diary Page
+🚨 IMPORTANT
+
+DO NOT BUILD:
+
+diary logic
+receipt animation
+rabbit interaction
+
+YET.
+
+ONLY navigation structure first.
+
+STEP 11 — Build calendar transition prototype
+
+Simple version ONLY.
+
+🎯 Goal
+
+When category pressed:
+
+rabbit slides
+calendar appears
+selected date enlarges
+open diary page
+IMPLEMENT USING
+Hero animation
+PageRouteBuilder
+FadeTransition
+ScaleTransition
+STEP 12 — Push GitHub checkpoint
+
+AFTER this phase:
+
+COMMIT:
+
+git add .
+git commit -m "Phase 2: cinematic homepage system"
+git push origin rabbit-ui
+🚀 AFTER PHASE 2 COMPLETE
+
+THEN you start:
+
+🌟 PHASE 3 — STORY CALENDAR SYSTEM
+
+ONLY THEN:
+
+rabbit enters dates
+group creation
+rabbit friends
+receipt unfolding
+🧠 IMPORTANT DEVELOPMENT RULE
+
+Your order from now:
+
+Structure
+→ Animation foundation
+→ Navigation
+→ Story flow
+→ Interaction system
+→ Finance integration
+→ Polish
+
+NOT:
+
+random feature adding
+
+Rabbit Animation Integration README 🐰
+Project Context
+
+This stage focused on adding an animated rabbit into the Flutter Expense Splitter project.
+
+The goal evolved through several steps:
+
+First display the rabbit animation on the main homepage
+Then move the rabbit into the swipeable Rabbit World homepage
+Ensure the rabbit exists only inside the world card instead of the entire app screen
+Handle animation rendering errors and layout overflow issues
+Test safer fallback approaches before final integration
+1. Initial Goal
+Objective
+
+Add an animated rabbit using Lottie animation into the Flutter application.
+
+The rabbit should:
+
+Animate continuously
+Appear visually inside the Rabbit World card
+Not overlay the entire expense app homepage
+Work smoothly with swipeable PageView world cards
+2. Initial Rabbit Setup in main.dart
+File Modified
+lib/main.dart
+Step Added
+Import Lottie Package
+BEFORE
+import 'package:flutter/material.dart';
+AFTER
+import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+Rabbit Added into Main Homepage
+Code Inserted
+
+Inside:
+
+body: Stack(
+
+the following rabbit widget was added:
+
+Positioned(
+  bottom: 20,
+  right: 20,
+  child: SizedBox(
+    width: 120,
+    child: Lottie.asset(
+      "assets/rabbits/bunny_hop.json",
+    ),
+  ),
+),
+Function
+
+This implementation:
+
+Places the rabbit at bottom-right corner
+Uses Stack to overlay animation above UI
+Uses Lottie.asset() to play JSON animation
+3. Problem Encountered
+Issue
+
+The rabbit appeared on the ENTIRE expense app homepage instead of inside the swipeable Rabbit World page.
+
+Observation
+
+The rabbit was:
+
+Floating globally
+Outside the world cards
+Not part of the immersive world experience
+4. Architectural Decision
+Decision Made
+
+Move rabbit animation from:
+
+main.dart
+
+to:
+
+world_home.dart
+
+because the Rabbit World page is where the themed experience belongs.
+
+5. Removing Rabbit from main.dart
+Removed Code
+Removed Import
+import 'package:lottie/lottie.dart';
+Removed Rabbit Widget
+Positioned(
+  bottom: 20,
+  right: 20,
+  child: SizedBox(
+    width: 120,
+    child: Lottie.asset(
+      "assets/rabbits/bunny_hop.json",
+    ),
+  ),
+),
+Result
+
+Main expense system returned to normal.
+
+Rabbit no longer overlays the entire application.
+
+6. Rabbit Added into world_home.dart
+File Modified
+lib/world_home.dart
+Import Added
+BEFORE
+import 'package:flutter/material.dart';
+AFTER
+import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+7. Rabbit Inserted Inside World Card
+Original Placeholder
+BEFORE
+const Align(
+  alignment: Alignment.center,
+
+  child: Icon(
+    Icons.pets,
+    color: Colors.white,
+    size: 55,
+  ),
+),
+Replaced With Animated Rabbit
+AFTER
+SizedBox(
+  height: 140,
+  width: 140,
+  child: Lottie.asset(
+    "assets/rabbits/bunny_hop.json",
+    fit: BoxFit.contain,
+    repeat: true,
+  ),
+),
+8. Function of This Implementation
+
+The rabbit:
+
+Exists inside each swipeable world card
+Animates continuously
+Scales together with PageView animation
+Becomes part of the world UI itself
+9. Major Error Encountered — RenderFlex Overflow
+Error Message
+A RenderFlex overflowed by 99676 pixels on the bottom.
+File Causing Error
+lib/world_home.dart
+Root Cause
+
+The inserted animation widget became too large inside a constrained Column.
+
+The Column already contained:
+
+Title
+Description
+Button
+Padding
+Alignment widgets
+
+Adding a large animation caused vertical overflow.
+
+10. Solution to Overflow Problem
+Safer Layout Adjustment
+
+The rabbit widget size was reduced.
+
+BEFORE
+height: 200,
+width: 200,
+AFTER
+height: 140,
+width: 140,
+Additional Layout Consideration
+
+Spacing inside the Column was carefully reduced to avoid excessive vertical expansion.
+
+11. Next Error — Broken Lottie JSON
+Error Message
+parameters.startFrame != parameters.endFrame
+Root Cause
+
+The downloaded Lottie animation file itself was incompatible or corrupted.
+
+The issue was NOT caused by Flutter layout code.
+
+12. Safe Debugging Approach Used
+
+Instead of immediately changing many files, a temporary safe test widget was used first.
+
+Safe Temporary Replacement
+Used This Test Code
+const SizedBox(
+  height: 140,
+  width: 140,
+  child: Icon(
+    Icons.pets,
+    color: Colors.white,
+    size: 70,
+  ),
+),
+Purpose
+
+This helped verify:
+
+Layout is correct
+PageView is working
+World card structure is stable
+The issue comes only from animation asset
+13. Debugging Strategy
+Why This Was Important
+
+This isolated the problem into:
+
+UI problem?
+OR animation file problem?
+
+After replacing with a safe icon:
+
+UI worked normally
+Therefore animation file was confirmed as the actual issue
+14. Attempt to Use .lottie File
+New Attempt
+
+A .lottie animation file was tested instead of .json.
+
+Code Used
+SizedBox(
+  height: 140,
+  width: 140,
+  child: Lottie.asset(
+    "assets/rabbits/Rabbit Kick Scooter.lottie",
+    fit: BoxFit.contain,
+    repeat: true,
+  ),
+),
+15. Package Installation Error
+Error Encountered
+Because expense_splitter depends on dotlottie_player any which doesn't exist
+Cause
+
+The suggested package:
+
+no longer existed
+outdated package reference
+unavailable on pub.dev
+16. Final Safer Decision
+Final Recommended Approach
+
+Use:
+
+standard .json Lottie files
+official lottie Flutter package only
+
+because it is:
+
+more stable
+better supported
+easier to debug
+more compatible with Flutter Web
+17. Final Stable Dependency
+pubspec.yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  lottie: ^3.1.2
+18. Final Recommended Animation Format
+Recommended
+assets/rabbits/cute_bunny.json
+Avoid If Possible
+.lottie
+
+because compatibility varies depending on export settings.
+
+19. Assets Setup
+Folder Structure
+assets/
+└── rabbits/
+    └── cute_bunny.json
+pubspec.yaml
+flutter:
+  assets:
+    - assets/rabbits/
+20. Final Stable Rabbit Widget
+Final Recommended Code
+SizedBox(
+  height: 140,
+  width: 140,
+  child: Lottie.asset(
+    "assets/rabbits/cute_bunny.json",
+    fit: BoxFit.contain,
+    repeat: true,
+  ),
+),
+21. Commands Used During Debugging
+Run Project
+flutter run -d chrome
+Hot Reload
+r
+Hot Restart
+R
+Install Packages
+flutter pub get
+22. What Was Achieved in This Stage
+Completed Features
+
+✅ Rabbit animation integrated into project
+
+✅ Swipeable Rabbit World implemented
+
+✅ Rabbit moved from global homepage into world card
+
+✅ PageView cinematic world cards functioning
+
+✅ Layout overflow resolved
+
+✅ Broken animation asset isolated and debugged
+
+✅ Safer fallback testing strategy applied
+
+✅ Stable Flutter animation setup identified
+
+23. Key Lessons Learned
+Technical Lessons
+Stack overlays globally
+PageView children should contain their own animations
+Large widgets inside Column can easily overflow
+Animation assets themselves may fail even when UI code is correct
+Safer debugging uses simple placeholder widgets first
+.json Lottie files are more reliable than .lottie
+24. Recommended Future Improvements
+Possible Enhancements
+Add rabbit interaction
+Different rabbits for each world
+Add floating animation effects
+Add enter-world transitions
+Add sound effects
+Add gamification system
+Add rabbit diary/pet progression system
+25. Final Project State
+
+The application now contains:
+
+Expense Splitter system
+Swipeable Rabbit Worlds
+Animated rabbit support
+Stable world card UI structure
+Cleaner separation between main app and themed pages
+
+@
+
+# 🐰 Animated Rabbit Homepage Integration Guide (Flutter)
+
+## 📌 Project Context
+
+This project started as a normal expense splitter application with:
+
+* Expense tracking
+* Settle-up calculator
+* Analytics chart
+* Swipeable category homepage
+
+The project direction later evolved into:
+
+> A cinematic Disney-inspired gamified expense tracker with storytelling, animated UI, rabbit mascot interactions, and diary-style navigation.
+
+The first major enhancement phase focused on:
+
+* Swipeable cinematic homepage
+* Animated category worlds
+* Rabbit mascot integration
+* Layered UI structure preparation
+
+---
+
+# 🚀 Stage Overview
+
+## ✅ What was completed in this stage
+
+### Homepage System
+
+* Swipeable PageView category navigation
+* Cinematic category transitions
+* Disney-inspired world concept direction
+* Responsive category layout
+
+### Animation Preparation
+
+* Introduced Lottie animation support
+* Planned rabbit mascot animation layer
+* Prepared homepage visual upgrade architecture
+
+### Project Architecture Planning
+
+* Separated:
+
+  * stable branch (`main`)
+  * experimental branch (`rabbit-ui`)
+* Prevented animation experiments from breaking core finance logic
+
+---
+
+# 🌿 Git Branch Structure
+
+## `main`
+
+Purpose:
+
+* Stable expense splitter app
+* Safe backup version
+* Core finance logic
+
+Contains:
+
+* Expense tracking
+* Settle-up system
+* Analytics
+* Stable navigation
+
+---
+
+## `rabbit-ui`
+
+Purpose:
+
+* Experimental gamified UI layer
+* Animation playground
+* Cinematic homepage development
+
+Contains:
+
+* Rabbit mascot integration
+* Animated world concepts
+* UI transition experiments
+
+---
+
+# 🐰 Rabbit Animation Integration Process
+
+# STEP 1 — Install Lottie Package
+
+## 📍 File Modified
+
+`pubspec.yaml`
+
+---
+
+## ✅ BEFORE
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+```
+
+---
+
+## ✅ AFTER
+
+```yaml
+dependencies:
+  flutter:
+    sdk: flutter
+  lottie: ^3.1.0
+```
+
+---
+
+## 🎯 Function
+
+Adds support for rendering Lottie animations in Flutter.
+
+---
+
+## ✅ Command Executed
+
+```bash
+flutter pub get
+```
+
+---
+
+# STEP 2 — Download Rabbit Animation
+
+## 🎯 Goal
+
+Add an animated rabbit mascot to homepage.
+
+---
+
+## ⚠️ Important Discovery
+
+Initially attempted to use:
+
+```text
+.lottie
+```
+
+Problem:
+
+* Some `.lottie` files were incompatible
+* Easier debugging was needed
+
+---
+
+## ✅ Safer Approach Used
+
+Switched to:
+
+```text
+.json
+```
+
+because:
+
+* More stable
+* Better Flutter compatibility
+* Easier debugging
+* Simpler setup
+
+---
+
+# STEP 3 — Add Rabbit Animation Asset
+
+## 📍 Asset Location
+
+```text
+assets/images/rabbit.json
+```
+
+---
+
+# STEP 4 — Register Asset
+
+## 📍 File Modified
+
+`pubspec.yaml`
+
+---
+
+## ✅ BEFORE
+
+```yaml
+flutter:
+  uses-material-design: true
+```
+
+---
+
+## ✅ AFTER
+
+```yaml
+flutter:
+  uses-material-design: true
+
+  assets:
+    - assets/images/rabbit.json
+```
+
+---
+
+## 🎯 Function
+
+Allows Flutter to load the rabbit animation asset.
+
+---
+
+# STEP 5 — Safe Testing Approach
+
+Instead of immediately inserting animation into homepage,
+a temporary isolated test screen was created first.
+
+This reduced:
+
+* homepage crashes
+* debugging complexity
+* UI conflicts
+
+---
+
+# 🧪 Rabbit Animation Test Screen
+
+## 📍 File Created
+
+```text
+lib/screens/rabbit_test.dart
+```
+
+---
+
+## ✅ Code Used
+
+```dart
+import 'package:flutter/material.dart';
+import 'package:lottie/lottie.dart';
+
+class RabbitTest extends StatelessWidget {
+  const RabbitTest({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: Colors.white,
+      body: Center(
+        child: Lottie.asset(
+          'assets/images/rabbit.json',
+          width: 250,
+          height: 250,
+        ),
+      ),
+    );
+  }
+}
+```
+
+---
+
+## 🎯 Function
+
+Creates a minimal isolated environment to safely verify:
+
+* animation loading
+* asset path correctness
+* Lottie compatibility
+
+before integrating into actual homepage.
+
+---
+
+# STEP 6 — Temporarily Modify Main Entry
+
+## 📍 File Modified
+
+`main.dart`
+
+---
+
+## ✅ BEFORE
+
+```dart
+void main() {
+  runApp(MyApp());
+}
+```
+
+---
+
+## ✅ AFTER (Temporary Testing Mode)
+
+```dart
+import 'screens/rabbit_test.dart';
+
+void main() {
+  runApp(
+    MaterialApp(
+      home: RabbitTest(),
+    ),
+  );
+}
+```
+
+---
+
+## 🎯 Function
+
+Temporarily launches rabbit test screen directly.
+
+This avoids:
+
+* breaking existing homepage
+* navigation conflicts
+* animation debugging inside large UI
+
+---
+
+# ⚠️ Errors Encountered During Rabbit Integration
+
+# ❌ Error 1 — No Rabbit Appearing
+
+## Symptoms
+
+* App launched normally
+* White screen appeared
+* No animation visible
+
+---
+
+## Possible Causes Investigated
+
+* Incorrect asset path
+* Incorrect `pubspec.yaml`
+* Unsupported `.lottie` file
+* Missing `flutter pub get`
+* Flutter asset cache issue
+
+---
+
+# ✅ Solution Strategy
+
+## Safer Debugging Method Used
+
+Instead of modifying homepage immediately:
+
+1. Created isolated test screen
+2. Tested animation independently
+3. Verified asset loading first
+4. Planned homepage integration later
+
+This prevented:
+
+* homepage corruption
+* difficult debugging
+* navigation conflicts
+
+---
+
+# ❌ Error 2 — Using `.lottie` Format
+
+## Problem
+
+The downloaded file was:
+
+```text
+.lottie
+```
+
+but was treated like:
+
+```text
+.json
+```
+
+This caused:
+
+* animation loading failure
+* invisible rabbit
+
+---
+
+# ✅ Solution
+
+Downloaded actual:
+
+```text
+rabbit.json
+```
+
+instead of:
+
+```text
+rabbit.lottie
+```
+
+---
+
+# ❌ Error 3 — Confusion About JSON Content
+
+## Observation
+
+Opening the JSON file displayed:
+
+* numbers
+* symbols
+* coordinate data
+
+instead of an image.
+
+---
+
+# ✅ Explanation
+
+Lottie JSON is:
+
+> animation data
+
+NOT:
+
+* PNG
+* JPG
+* GIF
+
+The file contains:
+
+* motion coordinates
+* animation timing
+* vector shape data
+
+This confirmed the file itself was valid.
+
+---
+
+# ❌ Error 4 — Flutter Web Noto Font Warning
+
+## Error Message
+
+```text
+Could not find a set of Noto fonts
+```
+
+---
+
+# ✅ Analysis
+
+This warning was unrelated to the rabbit animation.
+
+It only affected:
+
+* missing web font rendering
+
+It did NOT:
+
+* block Lottie
+* crash Flutter
+* prevent animation loading
+
+---
+
+# ✅ Final Debugging Commands Used
+
+```bash
+flutter clean
+flutter pub get
+flutter run
+```
+
+---
+
+# 🎯 Why This Approach Was Important
+
+## Instead of:
+
+❌ directly injecting animation into homepage
+
+A safer engineering approach was used:
+✅ isolate → test → verify → integrate
+
+This reduced:
+
+* risk of crashing homepage
+* debugging complexity
+* animation conflicts
+
+---
+
+# 🌍 Homepage Animation Architecture Plan
+
+## Planned Homepage Structure
+
+```text
+Stack
+ ├── Animated Background
+ ├── Rabbit Animation Layer
+ ├── PageView Categories
+ └── UI Overlay
+```
+
+---
+
+# 🎬 Planned Cinematic Features
+
+## Category Worlds
+
+* 🍔 Food World
+* 🚕 Transport World
+* 🛍️ Shopping World
+* 🏨 Accommodation World
+* ✈️ Trip World
+
+---
+
+## Planned Animation Effects
+
+* Rabbit skateboard animation
+* Swipe-based world transitions
+* Background parallax movement
+* Smooth fade transitions
+* Disney-inspired cinematic feel
+
+---
+
+# 🧠 Key Engineering Decisions
+
+## Decision 1 — Separate Branch Strategy
+
+Used:
+
+* `main`
+* `rabbit-ui`
+
+Reason:
+
+* Protect stable finance logic
+* Safely experiment with animations
+
+---
+
+## Decision 2 — Avoid Full Game Complexity
+
+Instead of:
+❌ building full game engine
+
+Approach used:
+✅ lightweight cinematic illusion
+
+Using:
+
+* PageView
+* AnimatedSwitcher
+* Stack
+* Lottie
+* AnimatedPositioned
+
+---
+
+## Decision 3 — Gradual Enhancement
+
+Development order:
+
+```text
+Core Finance Logic
+→ Swipe Homepage
+→ Animation Layer
+→ Story Navigation
+→ Calendar System
+→ Receipt Interaction
+→ Diary System
+```
+
+instead of:
+
+```text
+building everything simultaneously
+```
+
+---
+
+# 📌 Current Project Status
+
+## ✅ Completed
+
+* Expense system
+* Settle-up system
+* Analytics charts
+* Swipeable homepage
+* Category navigation
+* Rabbit animation preparation
+* Lottie integration setup
+* Experimental UI branch structure
+
+---
+
+## 🚀 Next Planned Stage
+
+### Homepage Visual Upgrade
+
+* Animated rabbit overlay
+* Dynamic category backgrounds
+* Smooth cinematic transitions
+* Parallax world movement
+
+Then later:
+
+* calendar storytelling
+* receipt unfolding animation
+* diary summary system
+* emotional finance feedback
+
+---
+
+# 🌟 Vision Statement
+
+This project aims to transform traditional expense tracking into:
+
+> A cinematic diary-style storytelling experience with gamified UI, emotional interactions, and animated collaborative finance management.
