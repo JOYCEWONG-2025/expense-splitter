@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'receipt_page.dart';
 
 class GroupCreationPage extends StatefulWidget {
   final String worldTitle;
@@ -11,17 +12,13 @@ class GroupCreationPage extends StatefulWidget {
   });
 
   @override
-  State<GroupCreationPage> createState() =>
-      _GroupCreationPageState();
+  State<GroupCreationPage> createState() => _GroupCreationPageState();
 }
 
-class _GroupCreationPageState
-    extends State<GroupCreationPage> {
-  final TextEditingController groupController =
-      TextEditingController();
+class _GroupCreationPageState extends State<GroupCreationPage> {
+  final TextEditingController groupController = TextEditingController();
 
-  final TextEditingController memberController =
-      TextEditingController();
+  final TextEditingController memberController = TextEditingController();
 
   List<String> members = [];
 
@@ -36,9 +33,7 @@ class _GroupCreationPageState
 
         title: Text(
           "${widget.worldTitle} Group 🐰",
-          style: const TextStyle(
-            color: Colors.black,
-          ),
+          style: const TextStyle(color: Colors.black),
         ),
       ),
 
@@ -51,10 +46,7 @@ class _GroupCreationPageState
           children: [
             Text(
               "${widget.selectedDay} May Timeline ✨",
-              style: const TextStyle(
-                fontSize: 18,
-                color: Colors.grey,
-              ),
+              style: const TextStyle(fontSize: 18, color: Colors.grey),
             ),
 
             const SizedBox(height: 30),
@@ -62,10 +54,7 @@ class _GroupCreationPageState
             // 📖 GROUP NAME
             const Text(
               "Group / Trip Name",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 12),
@@ -80,8 +69,7 @@ class _GroupCreationPageState
                 fillColor: Colors.white,
 
                 border: OutlineInputBorder(
-                  borderRadius:
-                      BorderRadius.circular(18),
+                  borderRadius: BorderRadius.circular(18),
 
                   borderSide: BorderSide.none,
                 ),
@@ -93,10 +81,7 @@ class _GroupCreationPageState
             // 👥 MEMBER SECTION
             const Text(
               "Add Rabbit Friends 👥",
-              style: TextStyle(
-                fontSize: 18,
-                fontWeight: FontWeight.bold,
-              ),
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
 
             const SizedBox(height: 12),
@@ -114,8 +99,7 @@ class _GroupCreationPageState
                       fillColor: Colors.white,
 
                       border: OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(18),
+                        borderRadius: BorderRadius.circular(18),
 
                         borderSide: BorderSide.none,
                       ),
@@ -159,23 +143,18 @@ class _GroupCreationPageState
 
                 itemBuilder: (context, index) {
                   return Container(
-                    margin:
-                        const EdgeInsets.only(bottom: 14),
+                    margin: const EdgeInsets.only(bottom: 14),
 
                     padding: const EdgeInsets.all(18),
 
                     decoration: BoxDecoration(
                       color: Colors.white,
-                      borderRadius:
-                          BorderRadius.circular(20),
+                      borderRadius: BorderRadius.circular(20),
                     ),
 
                     child: Row(
                       children: [
-                        const Text(
-                          "🐰",
-                          style: TextStyle(fontSize: 26),
-                        ),
+                        const Text("🐰", style: TextStyle(fontSize: 26)),
 
                         const SizedBox(width: 14),
 
@@ -184,8 +163,7 @@ class _GroupCreationPageState
                             members[index],
                             style: const TextStyle(
                               fontSize: 18,
-                              fontWeight:
-                                  FontWeight.w600,
+                              fontWeight: FontWeight.w600,
                             ),
                           ),
                         ),
@@ -205,26 +183,33 @@ class _GroupCreationPageState
                   backgroundColor: Colors.black,
                   foregroundColor: Colors.white,
 
-                  padding: const EdgeInsets.symmetric(
-                    vertical: 20,
-                  ),
+                  padding: const EdgeInsets.symmetric(vertical: 20),
 
                   shape: RoundedRectangleBorder(
-                    borderRadius:
-                        BorderRadius.circular(22),
+                    borderRadius: BorderRadius.circular(22),
                   ),
                 ),
 
                 onPressed: () {
                   // 🔜 receipt system next phase
+                  if (groupController.text.isEmpty || members.isEmpty) {
+                    return;
+                  }
+
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => ReceiptPage(
+                        groupName: groupController.text,
+                        members: members,
+                      ),
+                    ),
+                  );
                 },
 
                 child: const Text(
                   "Start Expense Story ✨",
-                  style: TextStyle(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                  ),
+                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
                 ),
               ),
             ),
