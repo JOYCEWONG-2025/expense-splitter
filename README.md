@@ -2702,3 +2702,2056 @@ Then later:
 This project aims to transform traditional expense tracking into:
 
 > A cinematic diary-style storytelling experience with gamified UI, emotional interactions, and animated collaborative finance management.
+
+
+*** SYNCHRONIZED WORLD SYSTEM***
+
+# 🐰 Cinematic World Sync System (Phase Upgrade Guide)
+
+## 📌 Current Stage Overview
+
+At this stage, the project has successfully evolved from a basic expense tracker into a **cinematic gamified UI system** with:
+
+* Swipeable category worlds (PageView system)
+* Rabbit mascot animation (Lottie integration)
+* Background visuals per category
+* Initial Disney-inspired UI direction
+
+However, the animation system was still **not synchronized**, causing the rabbit and world backgrounds to behave independently.
+
+---
+
+# 🚀 Problem Identified (Before This Upgrade)
+
+## ❌ Issues Found
+
+* Rabbit animation stayed fixed in the center of the screen
+* Rabbit did NOT move with swipe gestures
+* Background images changed independently
+* PageView controlled UI but NOT animation layer
+* Lack of unified motion system
+
+---
+
+## 🧠 Root Cause
+
+The system was missing a **central animation controller connection**:
+
+> PageView was not linked to rabbit movement or background transitions.
+
+So each UI element behaved separately instead of acting as one “world system”.
+
+---
+
+# 🎯 Solution Implemented
+
+## 🧩 Concept Introduced: “World Sync System”
+
+A unified motion architecture where:
+
+> 📱 Page swipe = controls EVERYTHING
+
+---
+
+## 🌍 System Flow
+
+```text id="sync1"
+User Swipe (PageView)
+        ↓
+PageController updates index
+        ↓
+Triggers state change
+        ↓
+Updates:
+   - Background world
+   - Rabbit position
+   - UI transitions
+```
+
+---
+
+# 🛠️ Implementation Changes
+
+## 📍 File Updated: Homepage (Swipe Screen)
+
+### 1️⃣ Added PageController (Master Controller)
+
+```dart id="sync2"
+final PageController _controller = PageController();
+double currentPage = 0;
+```
+
+---
+
+### 2️⃣ Connected PageView to Controller
+
+```dart id="sync3"
+PageView(
+  controller: _controller,
+  children: [...categoryPages],
+)
+```
+
+---
+
+### 3️⃣ Added Page Tracking Listener
+
+```dart id="sync4"
+@override
+void initState() {
+  super.initState();
+
+  _controller.addListener(() {
+    setState(() {
+      currentPage = _controller.page ?? 0;
+    });
+  });
+}
+```
+
+---
+
+### 4️⃣ Fixed Rabbit Movement (Before vs After)
+
+## ❌ Before (Static Rabbit)
+
+```dart id="sync5"
+Positioned(
+  bottom: 50,
+  child: Lottie.asset('assets/images/rabbit.json'),
+)
+```
+
+---
+
+## ✅ After (Synced Movement)
+
+```dart id="sync6"
+AnimatedPositioned(
+  duration: Duration(milliseconds: 300),
+  left: 50 + (currentPage * 80),
+  bottom: 50,
+  child: Lottie.asset(
+    'assets/images/rabbit.json',
+    width: 150,
+  ),
+)
+```
+
+---
+
+### 5️⃣ Synchronized Background System
+
+```dart id="sync7"
+AnimatedSwitcher(
+  duration: Duration(milliseconds: 500),
+  child: Image.asset(
+    worldImages[currentPage.round()],
+    key: ValueKey(currentPage.round()),
+    fit: BoxFit.cover,
+  ),
+)
+```
+
+---
+
+# 🧪 Testing Strategy Used
+
+## 🟢 Safe Implementation Approach
+
+Instead of modifying everything at once:
+
+### Step 1
+
+Created isolated rabbit test screen
+
+### Step 2
+
+Verified Lottie animation works independently
+
+### Step 3
+
+Integrated into homepage as overlay layer
+
+### Step 4
+
+Connected to PageView state
+
+---
+
+# ⚠️ Errors Encountered & Fixes
+
+## ❌ Rabbit Not Showing Initially
+
+### Causes:
+
+* Incorrect asset path
+* Missing pubspec asset registration
+* Using `.lottie` instead of `.json`
+* Flutter cache not refreshed
+
+### Fix:
+
+* Switched to `.json`
+* Ran:
+
+```bash
+flutter clean
+flutter pub get
+```
+
+---
+
+## ❌ Rabbit Not Moving With Swipe
+
+### Cause:
+
+* No connection between PageView and animation layer
+
+### Fix:
+
+* Introduced `PageController`
+* Added `currentPage` listener
+* Linked animation position to page value
+
+---
+
+## ❌ Flutter Web Font Warning
+
+```text
+Could not find a set of Noto fonts
+```
+
+### Status:
+
+* Non-blocking warning
+* No impact on animation system
+* Ignored during implementation
+
+---
+
+# 🧠 Key Engineering Decisions
+
+## 🟢 Decision 1 — Avoid Full Game Engine
+
+Instead of building a complex game framework:
+
+* Used Flutter native animations
+* Used PageView as main controller
+* Used Lottie for mascot animation
+
+---
+
+## 🟢 Decision 2 — Centralized Motion Control
+
+All motion is now controlled by:
+
+> PageController (single source of truth)
+
+---
+
+## 🟢 Decision 3 — Gradual System Building
+
+Instead of building full features:
+
+1. UI structure first
+2. Animation layer next
+3. Sync system (current phase)
+4. Story system (future phase)
+
+---
+
+# 🎯 Current System Status
+
+## ✅ Completed
+
+* Swipeable category world system
+* Rabbit mascot animation integration
+* Background visual system
+* Lottie animation setup
+* Safe testing architecture
+* Initial homepage structure upgrade
+
+---
+
+## 🚀 Completed in This Phase
+
+✔ Unified PageController system
+✔ Rabbit movement synced with swipe
+✔ Background transitions synchronized
+✔ Cinematic motion foundation created
+
+---
+
+# 🌟 Result After This Upgrade
+
+## Before
+
+* Static rabbit
+* Independent UI elements
+* Basic swipe navigation
+
+---
+
+## After
+
+* Rabbit follows world movement
+* Background changes with swipe
+* Unified cinematic motion system
+* Disney-style illusion of “world shifting”
+
+---
+
+# 🎬 Next Planned Phase
+
+## 🟣 Story System Layer
+
+Next upgrades will include:
+
+* Calendar-based storytelling
+* Diary-style expense entries
+* Group creation system
+* Receipt unfolding animation
+* Emotional budget feedback system
+* Rabbit interaction with users
+
+---
+
+# 💡 Vision Statement
+
+This project is evolving into:
+
+> A cinematic, animated expense tracking experience where financial management feels like exploring interactive worlds with a mascot-driven storytelling system.
+
+🐰 Expense Splitter – Gamified World Edition (Flutter)
+🎯 Project Overview
+
+This project is a gamified expense tracking app built with Flutter.
+It transforms traditional expense management into a story-based, animated “world exploration” experience.
+
+Users don’t just track expenses — they travel through themed worlds (Food, Transport, Shopping, etc.) with an animated rabbit character.
+
+
+🌍 Core Concept
+
+Instead of a normal finance app:
+
+💡 Users swipe through “expense worlds” like a game
+🐰 A rabbit character moves across worlds
+📅 Each world represents a category of spending
+🧾 Future goal: interactive receipts + story timeline + settle-up system
+
+🧱 App Structure
+🏠 1. Main Expense System (Stable Branch)
+Core expense tracking logic
+Split bills between users
+Settle-up calculations
+Analytics charts
+Production-ready base
+🎮 2. Rabbit World (Experimental Branch)
+
+A gamified UI layer built on top of the core system:
+
+Features:
+Swipeable world navigation (PageView)
+Animated world cards (3D scaling + rotation effect)
+Themed backgrounds:
+🍔 Food World
+🚗 Transport World
+🛍️ Shopping World
+🏨 Accommodation World
+✈️ Trip World
+🌈 Others
+🐰 Animated rabbit (Lottie-based)
+Rabbit moves across world pages (initial version)
+🐰 Animation System (Implemented)
+🔧 Current Implementation
+1. Page tracking system
+double currentPage = 0;
+
+Tracks swipe position in real-time.
+
+2. PageController listener
+_controller.addListener(() {
+  setState(() {
+    currentPage = _controller.page ?? 0;
+  });
+});
+
+Used to sync UI animations with swipe movement.
+
+3. World navigation (PageView)
+Swipe left/right to move between expense worlds
+Each page represents a category-based “world”
+4. Rabbit animation (FIXED VERSION)
+Rabbit moved OUTSIDE PageView
+Wrapped inside Stack
+Uses Positioned + currentPage
+Positioned(
+  top: 120,
+  left: currentPage * MediaQuery.of(context).size.width * 0.6,
+  child: Lottie.asset("assets/rabbits/Rabbit Kick Scooter.json"),
+)
+🧠 Key Fix Applied
+
+❌ Wrong:
+
+Positioned inside Column → caused crash
+
+✔ Correct:
+
+Positioned inside Stack → correct layering system
+🐛 Issues Encountered & Fixes
+❌ 1. Rabbit not appearing
+Cause:
+Incorrect Lottie asset path OR missing Stack structure
+Fix:
+Correct asset path in pubspec.yaml
+Ensure Stack layout is used
+❌ 2. Flutter crash: “Incorrect use of ParentDataWidget”
+Cause:
+Positioned used inside Column
+Fix:
+Wrapped PageView + Rabbit inside Stack
+❌ 3. JSON showing numbers instead of animation
+Cause:
+Opening Lottie JSON directly (not previewed in Flutter)
+Fix:
+Use Lottie.asset() instead of viewing raw JSON
+❌ 4. Rabbit not sliding across worlds
+Cause:
+Rabbit placed inside individual cards
+Fix:
+Moved rabbit to global Stack level
+Controlled with currentPage
+🧪 Development Phases Completed
+Phase 1: Core App
+
+✔ Expense tracking system
+✔ Split calculation logic
+✔ Stable Git branch (expense-main)
+
+Phase 2: Gamified UI Prototype
+
+✔ Swipeable world pages
+✔ Category-based UI structure
+✔ 3D card transitions
+
+Phase 3: Rabbit Animation Integration
+
+✔ Added Lottie rabbit
+✔ Integrated animation asset
+✔ Fixed asset loading issues
+
+Phase 4: World Movement System (Current)
+
+✔ PageView + PageController sync
+✔ currentPage tracking
+✔ Rabbit movement across worlds (basic version)
+✔ Stack-based UI layering fix
+
+🧠 Key Design Decisions
+1. Branch Strategy
+expense-main → stable finance system
+rabbit-world → experimental gamified UI
+
+✔ Prevents breaking production logic
+
+2. Animation Strategy
+Lottie used for rabbit animation
+PageView used for world navigation
+Stack used for layering system
+3. Safe Development Approach
+
+✔ Built core logic first
+✔ Added animation layer separately
+✔ Tested small UI changes before full integration
+✔ Fixed layout crashes step-by-step
+
+⚠️ Known Limitations (Current Stage)
+Rabbit movement is linear (not physics-based)
+No full world transition system yet
+No interaction between rabbit and UI elements
+No receipt / calendar story system yet
+
+🐰 WorldHome Animation Upgrade – Debug & Fix Log
+🎯 Goal of this phase
+
+Upgrade the homepage into a gamified swipeable world system with:
+
+🌍 Swipeable expense worlds (PageView)
+🐰 Animated rabbit that moves across worlds
+🎮 Game-like UI transition feel
+🎨 Cinematic card scaling + rotation effect
+🧱 What was implemented
+1. PageView World System
+Before (basic structure)
+Static category UI
+No animation sync
+No global movement logic
+After (updated)
+PageView.builder used for world navigation
+Each world represents a category:
+Food 🍔
+Transport 🚗
+Shopping 🛍️
+Accommodation 🏨
+Trip ✈️
+Others 🌈
+
+✔ Enables swipe-based navigation
+
+2. Rabbit Animation System (Lottie)
+Initial attempt (problematic)
+AnimatedContainer + Lottie inside buildWorldCard()
+Issue
+Rabbit duplicated per card
+Animation not synced with swipe
+UI felt inconsistent
+Final implementation (FIXED)
+Positioned(
+  bottom: 20,
+  left: currentPage *
+      screenWidth *
+      0.65 /
+      (worlds.length - 1),
+  child: Lottie.asset("assets/rabbits/Rabbit Kick Scooter.json"),
+)
+
+✔ Single global rabbit
+✔ Moves smoothly across worlds
+✔ Synced with PageView scroll
+
+🐛 Errors Faced & Fixes
+❌ Error 1: Incorrect use of ParentDataWidget
+❗ Error message
+Incorrect use of ParentDataWidget.
+Positioned widget used inside Column
+📍 Cause
+Positioned was placed inside a Column or non-Stack widget
+🔧 Fix applied
+Wrapped PageView + Rabbit inside:
+Stack(
+  children: [
+    PageView.builder(...),
+    Positioned(...)
+  ],
+)
+
+✔ Ensures correct Flutter layout hierarchy
+
+❌ Error 2: Rabbit not moving across worlds
+📍 Cause
+Rabbit placed inside buildWorldCard()
+No global scroll tracking
+🔧 Fix applied
+Introduced currentPage tracking:
+_controller.addListener(() {
+  setState(() {
+    currentPage = _controller.page ?? 0;
+  });
+});
+
+✔ Enables real-time page tracking
+✔ Allows animation sync with swipe
+
+❌ Error 3: Duplicate rabbit rendering
+📍 Cause
+Rabbit existed in BOTH:
+buildWorldCard()
+Stack overlay
+🔧 Fix applied
+Removed rabbit from buildWorldCard()
+Kept ONLY global Stack rabbit
+
+✔ Prevents UI duplication
+✔ Improves performance
+✔ Fixes visual glitch
+
+❌ Error 4: JSON showing numbers / no animation visible
+📍 Cause
+Lottie file not rendered correctly or previewed outside Flutter
+🔧 Fix applied
+Ensured proper asset usage:
+Lottie.asset("assets/rabbits/Rabbit Kick Scooter.json")
+
+✔ Correct rendering inside Flutter engine
+
+🧠 Key Design Decisions
+1. Single source of truth for animation
+
+✔ Only one rabbit exists globally
+✔ Avoids conflicting animation states
+
+2. Stack-based layout system
+
+✔ Used Stack to layer:
+
+Background worlds (PageView)
+Floating rabbit (Positioned)
+3. Page-synced movement logic
+left = currentPage * screenWidth / (worlds.length - 1)
+
+✔ Ensures smooth interpolation between pages
+✔ Makes rabbit feel “attached” to swipe movement
+
+🧪 Safe Development Approach Used
+
+✔ Built animation incrementally
+✔ Tested PageView first
+✔ Added rabbit as overlay later
+✔ Removed conflicting widget hierarchy
+✔ Fixed layout errors step-by-step
+✔ Avoided full rewrite of existing UI
+
+🚀 Result After Fix
+
+The system now achieves:
+
+✔ Stable swipe navigation
+✔ Smooth animated rabbit movement
+✔ No Flutter layout crashes
+✔ Clean separation of UI layers
+✔ Ready foundation for game-style expansion
+
+🎮 Next Planned Upgrade
+
+This system is now ready for:
+
+🐰 Smooth “travel animation” (lerp movement)
+🌍 Background world transition effects
+📖 Story-mode calendar integration
+🧾 Receipt unfolding animation system
+👥 Group expense “character system”
+💡 Summary
+
+This phase successfully transformed:
+
+📱 Static category UI
+⬇
+🎮 Swipeable gamified world system with animated character
+
+-----------------------------------------------------------------------
+
+🧭 What you should do NEXT (best order)
+🥇 STEP 1 — Stabilize the “World System” (IMPORTANT)
+
+Before adding more animation complexity, lock in structure:
+
+You already have:
+
+✔ PageView world navigation
+✔ Global rabbit movement
+✔ Category worlds
+
+Now add:
+
+🧱 Each world becomes a “data-driven scene”
+
+Instead of only image + text, upgrade your model:
+
+{
+  "title": "Food World 🍔",
+  "desc": "Track meals",
+  "image": "assets/backgrounds/food.jpg",
+  "emotion": "happy",
+}
+
+👉 This prepares everything for animation later
+
+🥈 STEP 2 — Background “World Feel Upgrade” (easy win)
+
+Right now:
+
+Background is static image per card
+
+Upgrade idea:
+
+Add slight dark overlay variation per page
+Add subtle gradient shift per world
+
+Example effect:
+
+Food → warm orange glow
+Transport → cool blue tone
+Shopping → pastel pink
+
+👉 This instantly makes it feel like “different worlds” without heavy animation
+
+🥉 STEP 3 — Make Rabbit Movement MORE natural (IMPORTANT UPGRADE)
+
+Right now:
+
+Rabbit position = linear calculation
+
+Next upgrade:
+👉 Make it feel like a character following the scroll
+
+Instead of hard position math, use smoothing:
+
+Concept:
+
+currentPage → target
+rabbit → slowly follows (animated delay)
+
+This is called:
+
+🧠 “lerp / smoothing animation”
+
+Result:
+✔ rabbit feels alive
+✔ not robotic sliding
+✔ game-like movement starts
+
+🏗 STEP 4 — ONLY THEN add “World Personality System”
+
+This is where your idea becomes powerful:
+
+Each world has:
+
+🌍 Food World
+warm tone
+happy rabbit
+🚗 Transport World
+fast movement effect
+slight shake or motion blur feel
+🛍 Shopping World
+sparkle animation
+✈️ Trip World
+floating motion feel
+
+👉 This is what makes it feel like a “game map”
+
+🚀 STEP 5 — THEN go to “Story Mode” (later stage)
+
+Only after everything above works:
+
+calendar timeline
+diary entries per day
+rabbit enters date like “chapter”
+
+--------------------------------------------------------------
+🌍 STEP 3 — WORLD TRANSITION SYSTEM (WHAT IT REALLY MEANS)
+
+Right now your system is:
+
+🧱 “static PageView + moving rabbit overlay”
+
+That’s why:
+
+rabbit “floats on top”
+world changes are instant
+background doesn’t feel connected to movement
+🎮 STEP 3 GOAL (REAL MEANING)
+
+We upgrade it into:
+
+🌊 “continuous world travel experience”
+
+So instead of:
+
+swipe → instant switch
+
+You get:
+
+swipe → smooth world morphing
+🧠 WHAT WE ARE ACTUALLY CHANGING
+
+Not just rabbit.
+
+We are upgrading 3 layers together:
+
+🟢 1. BACKGROUND MOTION (IMPORTANT)
+BEFORE:
+static image per card
+AFTER:
+background shifts slightly with swipe
+feels like moving through space
+🟡 2. RABBIT BEHAVIOR (you already started this)
+BEFORE:
+fixed positioned + scale
+AFTER:
+follows swipe movement smoothly
+“rides between worlds”
+🔵 3. PAGE TRANSITION FEEL
+BEFORE:
+card swap
+AFTER:
+cinematic depth + parallax
+⚠️ IMPORTANT TRUTH (so you don’t get confused)
+
+Your current code:
+
+left: currentPage * screenWidth * 0.65 / (worlds.length - 1)
+
+👉 This is ONLY a simple linear movement
+
+It is NOT yet:
+
+smooth follow
+physics motion
+parallax system
+🚀 WHAT STEP 3 WILL CHANGE (REAL UPGRADE)
+
+We will REPLACE this logic with:
+
+🎯 1. Animated tracking (smooth follow)
+
+Instead of instant position:
+
+use interpolation (lerp effect)
+🎯 2. Page-based animation value system
+
+We will introduce:
+
+final delta = (currentPage - index);
+
+This is what enables:
+
+smooth depth
+scaling background movement
+rabbit lag-follow effect
+🎯 3. Parallax background movement
+
+World card background will shift slightly like:
+
+foreground moves faster
+background moves slower
+🧠 SIMPLE VERSION OF STEP 3
+
+You are upgrading from:
+
+📦 “card UI system”
+
+to:
+
+🎬 “camera movement system”
+
+----------------------------------------------------------------------
+
+🌍 STEP 4 — ENTER WORLD SYSTEM (GAME FLOW UPGRADE)
+🎯 Goal of this step
+
+When user taps:
+
+✨ “Enter World”
+
+You will NOT just stay on same page.
+
+Instead you will:
+
+🚪 move into a new screen (world scene)
+🐰 rabbit “enters” that world
+📦 prepare for receipt + splitting system
+📖 start story-style experience per category
+🧠 WHY THIS STEP IS IMPORTANT
+
+Right now your app is:
+
+🌍 “swipe gallery of worlds”
+
+After STEP 4:
+
+🎮 “each world becomes a playable scene”
+
+This is where it becomes a real gamified app
+
+🟢 STEP 4A — CREATE NEW FILE (IMPORTANT)
+
+📍 Create this file:
+
+lib/world_scene.dart
+✨ ADD THIS BASIC WORLD SCENE
+import 'package:flutter/material.dart';
+
+class WorldScene extends StatelessWidget {
+  final String title;
+  final String image;
+
+  const WorldScene({
+    super.key,
+    required this.title,
+    required this.image,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Stack(
+        children: [
+          // 🌍 BACKGROUND
+          SizedBox.expand(
+            child: Image.asset(
+              image,
+              fit: BoxFit.cover,
+            ),
+          ),
+
+          // 🌫 DARK OVERLAY
+          Container(
+            color: Colors.black.withOpacity(0.4),
+          ),
+
+          // 🧭 CONTENT
+          SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+
+                const Spacer(),
+
+                const Text(
+                  "World Loaded 🎮",
+                  style: TextStyle(
+                    fontSize: 18,
+                    color: Colors.white70,
+                  ),
+                ),
+
+                const SizedBox(height: 40),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+🟡 STEP 4B — CONNECT BUTTON (IMPORTANT)
+
+📍 Go back to your buildWorldCard
+
+Find:
+
+onPressed: () {
+  // 🚀 future navigation here
+},
+🔥 REPLACE WITH THIS
+onPressed: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => WorldScene(
+        title: world["title"]!,
+        image: world["image"]!,
+      ),
+    ),
+  );
+},
+🧠 WHAT THIS GIVES YOU
+
+Now when user presses:
+
+✨ Enter World
+
+You get:
+
+🚪 new screen opens
+🌍 world background loads full screen
+📖 clean “story mode base”
+🐰 ready for next animation layer
+
+---------------------------------------------------------
+
+🌍 PHASE 4 — Cinematic Transition Polish
+🎯 Objective
+
+Improve depth illusion during swiping.
+
+✅ Added Parallax-Like Movement
+BEFORE
+child: Opacity(
+  opacity: value,
+  child: buildWorldCard(worlds[index]),
+),
+AFTER
+child: Transform.translate(
+  offset: Offset(0, value < 0.8 ? 20 : 0),
+
+  child: Opacity(
+    opacity: value,
+    child: buildWorldCard(worlds[index]),
+  ),
+),
+🎬 Effect Achieved
+cinematic movement
+pseudo-parallax feel
+layered depth illusion
+smoother transitions
+🌍 PHASE 5 — World Entry Navigation System
+🎯 Objective
+
+Convert worlds into interactive gameplay scenes.
+
+Before:
+
+world cards only
+
+After:
+
+clickable playable worlds
+📂 New File Created
+lib/world_scene.dart
+✅ Added WorldScene Class
+
+Purpose:
+
+dedicated gameplay environment
+separate navigation architecture
+future receipt/story system foundation
+✅ Connected Enter World Button
+BEFORE
+onPressed: () {
+  // future navigation here
+},
+AFTER
+onPressed: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => WorldScene(
+        title: world["title"]!,
+        image: world["image"]!,
+      ),
+    ),
+  );
+},
+⚠️ ISSUE FACED — WorldScene Red Line
+Cause
+
+Missing import.
+
+✅ Solution
+
+Added:
+
+import 'world_scene.dart';
+
+or:
+
+import 'package:expense_splitter/world_scene.dart';
+
+depending on project structure.
+
+📅 PHASE 6 — Timeline / Story Calendar System
+🎯 Objective
+
+Transform expense tracking into:
+
+memory timeline experience
+📂 New File Created
+lib/timeline_page.dart
+✅ Timeline Features Added
+selectable dates
+rabbit indicator
+story progression feel
+future diary foundation
+future expense-by-day structure
+✅ Added Timeline Navigation
+world_scene.dart
+BEFORE
+const Text(
+  "World Loaded 🎮",
+),
+AFTER
+
+Added button below:
+
+ElevatedButton(
+  onPressed: () {
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => TimelinePage(
+          worldTitle: title,
+          worldImage: image,
+        ),
+      ),
+    );
+  },
+)
+⚠️ ISSUE FACED — TimelinePage Red Line
+Cause
+
+Timeline file not imported.
+
+✅ Solution
+
+Added:
+
+import 'timeline_page.dart';
+
+inside:
+
+world_scene.dart
+🧠 ARCHITECTURE DECISION
+VERY IMPORTANT
+
+Instead of:
+
+putting everything into one screen
+
+Architecture was separated into:
+
+Screen	Responsibility
+WorldHome	navigation hub
+WorldScene	gameplay entry
+TimelinePage	story timeline
+
+This creates:
+
+cleaner architecture
+easier debugging
+future scalability
+maintainable animation systems
+🎮 CURRENT APP FLOW
+Home Worlds
+    ↓
+Enter World
+    ↓
+World Scene
+    ↓
+Open Timeline
+    ↓
+Choose Date
+🚀 NEXT PHASE (UPCOMING)
+👥 Phase 7 — Group Creation System
+
+Planned:
+
+popup dialog
+group/trip naming
+rabbit character assignment
+participant system
+🌟 CURRENT PROJECT STATUS
+
+The project has successfully evolved from:
+
+Simple Expense Splitter
+
+into:
+
+Gamified Storybook Expense Adventure App
+
+Current architecture is now prepared for:
+
+diary system
+receipt unfolding animation
+group storytelling
+analytics memories
+smart recommendations
+cinematic interactions
+future game-like UX
+
+--------------------------------------------
+👥 PHASE 7 — GROUP CREATION SYSTEM
+
+Now your app becomes:
+
+story timeline
+    ↓
+group creation
+    ↓
+expense adventure begins
+
+This is the phase where:
+
+users create trip/group names
+rabbit “meets friends”
+participants are assigned
+story officially starts
+🎯 WHAT YOU ARE BUILDING NOW
+
+After selecting a date:
+
+1 May
+   ↓
+Create Group
+   ↓
+Add Participants
+   ↓
+Start Expense Story
+🧠 WHY THIS PHASE IS IMPORTANT
+
+This system becomes the foundation for:
+
+✅ split bill logic
+✅ settle-up calculations
+✅ receipt assignment
+✅ analytics per participant
+✅ rabbit character system later
+
+Without this:
+
+expense system cannot scale properly
+🟢 STEP 1 — CREATE NEW FILE
+
+📍 Create:
+
+lib/group_creation_page.dart
+🟢 STEP 2 — ADD THIS FULL CODE
+import 'package:flutter/material.dart';
+
+class GroupCreationPage extends StatefulWidget {
+  final String worldTitle;
+  final int selectedDay;
+
+  const GroupCreationPage({
+    super.key,
+    required this.worldTitle,
+    required this.selectedDay,
+  });
+
+  @override
+  State<GroupCreationPage> createState() =>
+      _GroupCreationPageState();
+}
+
+class _GroupCreationPageState
+    extends State<GroupCreationPage> {
+  final TextEditingController groupController =
+      TextEditingController();
+
+  final TextEditingController memberController =
+      TextEditingController();
+
+  List<String> members = [];
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F1F8),
+
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+
+        title: Text(
+          "${widget.worldTitle} Group 🐰",
+          style: const TextStyle(
+            color: Colors.black,
+          ),
+        ),
+      ),
+
+      body: Padding(
+        padding: const EdgeInsets.all(24),
+
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+
+          children: [
+            Text(
+              "${widget.selectedDay} May Timeline ✨",
+              style: const TextStyle(
+                fontSize: 18,
+                color: Colors.grey,
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            // 📖 GROUP NAME
+            const Text(
+              "Group / Trip Name",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            TextField(
+              controller: groupController,
+
+              decoration: InputDecoration(
+                hintText: "Example: Korea Food Trip 🍜",
+
+                filled: true,
+                fillColor: Colors.white,
+
+                border: OutlineInputBorder(
+                  borderRadius:
+                      BorderRadius.circular(18),
+
+                  borderSide: BorderSide.none,
+                ),
+              ),
+            ),
+
+            const SizedBox(height: 30),
+
+            // 👥 MEMBER SECTION
+            const Text(
+              "Add Rabbit Friends 👥",
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+
+            const SizedBox(height: 12),
+
+            Row(
+              children: [
+                Expanded(
+                  child: TextField(
+                    controller: memberController,
+
+                    decoration: InputDecoration(
+                      hintText: "Enter friend name",
+
+                      filled: true,
+                      fillColor: Colors.white,
+
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(18),
+
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+                ),
+
+                const SizedBox(width: 12),
+
+                ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black,
+                    foregroundColor: Colors.white,
+
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 22,
+                      vertical: 18,
+                    ),
+                  ),
+
+                  onPressed: () {
+                    if (memberController.text.isNotEmpty) {
+                      setState(() {
+                        members.add(memberController.text);
+                        memberController.clear();
+                      });
+                    }
+                  },
+
+                  child: const Text("Add"),
+                ),
+              ],
+            ),
+
+            const SizedBox(height: 30),
+
+            // 🐰 MEMBER LIST
+            Expanded(
+              child: ListView.builder(
+                itemCount: members.length,
+
+                itemBuilder: (context, index) {
+                  return Container(
+                    margin:
+                        const EdgeInsets.only(bottom: 14),
+
+                    padding: const EdgeInsets.all(18),
+
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius:
+                          BorderRadius.circular(20),
+                    ),
+
+                    child: Row(
+                      children: [
+                        const Text(
+                          "🐰",
+                          style: TextStyle(fontSize: 26),
+                        ),
+
+                        const SizedBox(width: 14),
+
+                        Expanded(
+                          child: Text(
+                            members[index],
+                            style: const TextStyle(
+                              fontSize: 18,
+                              fontWeight:
+                                  FontWeight.w600,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+
+            // 🚀 START STORY BUTTON
+            SizedBox(
+              width: double.infinity,
+
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.black,
+                  foregroundColor: Colors.white,
+
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 20,
+                  ),
+
+                  shape: RoundedRectangleBorder(
+                    borderRadius:
+                        BorderRadius.circular(22),
+                  ),
+                ),
+
+                onPressed: () {
+                  // 🔜 receipt system next phase
+                },
+
+                child: const Text(
+                  "Start Expense Story ✨",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+🟢 STEP 3 — CONNECT TIMELINE PAGE
+
+Go to:
+
+timeline_page.dart
+🟡 IMPORT THIS AT TOP
+import 'group_creation_page.dart';
+🟡 FIND THIS
+onPressed: () {
+  // 🔜 next phase
+},
+🟢 REPLACE WITH THIS
+onPressed: () {
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => GroupCreationPage(
+        worldTitle: widget.worldTitle,
+        selectedDay: selectedDay,
+      ),
+    ),
+  );
+},
+🎮 WHAT YOU JUST BUILT
+
+Your app flow is now:
+
+Home
+ ↓
+World
+ ↓
+Timeline
+ ↓
+Choose Day
+ ↓
+Create Group
+ ↓
+Add Rabbit Friends
+🧠 IMPORTANT ARCHITECTURE DECISION
+
+You are currently doing something VERY correct:
+
+Instead of:
+
+one giant messy page
+
+You separated systems into:
+
+navigation layer
+timeline layer
+group layer
+
+This is how scalable apps are built.
+--------------------------------------------------------
+🧾 PHASE 8 — RECEIPT UNFOLD SYSTEM
+
+Now your app enters the REAL expense interaction phase.
+
+This is the phase where:
+
+rabbit adventure
+    ↓
+group created
+    ↓
+receipt unfolds
+    ↓
+expenses added
+    ↓
+split begins
+🎯 WHAT YOU ARE BUILDING NOW
+
+You will build:
+
+✅ animated-style receipt UI
+✅ expense description
+✅ amount field
+✅ who paid
+✅ split among members
+✅ upload receipt image placeholder
+✅ smooth card-style interaction
+
+This becomes the CORE of your app.
+
+🟢 STEP 1 — CREATE NEW FILE
+
+📍 Create:
+
+lib/receipt_page.dart
+🟢 STEP 2 — ADD THIS FULL CODE
+import 'package:flutter/material.dart';
+
+class ReceiptPage extends StatefulWidget {
+  final String groupName;
+  final List<String> members;
+
+  const ReceiptPage({
+    super.key,
+    required this.groupName,
+    required this.members,
+  });
+
+  @override
+  State<ReceiptPage> createState() => _ReceiptPageState();
+}
+
+class _ReceiptPageState extends State<ReceiptPage>
+    with SingleTickerProviderStateMixin {
+  final TextEditingController descriptionController =
+      TextEditingController();
+
+  final TextEditingController amountController =
+      TextEditingController();
+
+  String? selectedPayer;
+
+  List<String> selectedMembers = [];
+
+  late AnimationController _controller;
+
+  late Animation<double> animation;
+
+  @override
+  void initState() {
+    super.initState();
+
+    _controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    animation = CurvedAnimation(
+      parent: _controller,
+      curve: Curves.easeOutBack,
+    );
+
+    _controller.forward();
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: const Color(0xFFF6F1F8),
+
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+
+        title: Text(
+          "${widget.groupName} Receipt 🧾",
+          style: const TextStyle(
+            color: Colors.black,
+          ),
+        ),
+      ),
+
+      body: Center(
+        child: ScaleTransition(
+          scale: animation,
+
+          child: Container(
+            margin: const EdgeInsets.all(24),
+            padding: const EdgeInsets.all(24),
+
+            decoration: BoxDecoration(
+              color: Colors.white,
+              borderRadius: BorderRadius.circular(30),
+
+              boxShadow: const [
+                BoxShadow(
+                  blurRadius: 20,
+                  color: Colors.black12,
+                  offset: Offset(0, 10),
+                ),
+              ],
+            ),
+
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment:
+                    CrossAxisAlignment.start,
+
+                children: [
+                  const Center(
+                    child: Text(
+                      "Expense Receipt ✨",
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 35),
+
+                  // 📝 DESCRIPTION
+                  const Text(
+                    "Expense Description",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  TextField(
+                    controller: descriptionController,
+
+                    decoration: InputDecoration(
+                      hintText:
+                          "Example: Korean BBQ Dinner 🍖",
+
+                      filled: true,
+                      fillColor: const Color(0xFFF4F4F4),
+
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(18),
+
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 💰 AMOUNT
+                  const Text(
+                    "Amount",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  TextField(
+                    controller: amountController,
+                    keyboardType:
+                        TextInputType.number,
+
+                    decoration: InputDecoration(
+                      hintText: "0.00",
+
+                      filled: true,
+                      fillColor: const Color(0xFFF4F4F4),
+
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(18),
+
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 👤 WHO PAID
+                  const Text(
+                    "Who Paid?",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 10),
+
+                  DropdownButtonFormField<String>(
+                    value: selectedPayer,
+
+                    items: widget.members.map((member) {
+                      return DropdownMenuItem(
+                        value: member,
+                        child: Text(member),
+                      );
+                    }).toList(),
+
+                    onChanged: (value) {
+                      setState(() {
+                        selectedPayer = value;
+                      });
+                    },
+
+                    decoration: InputDecoration(
+                      filled: true,
+                      fillColor: const Color(0xFFF4F4F4),
+
+                      border: OutlineInputBorder(
+                        borderRadius:
+                            BorderRadius.circular(18),
+
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 👥 SPLIT AMONG
+                  const Text(
+                    "Split Among",
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+
+                  const SizedBox(height: 12),
+
+                  Column(
+                    children:
+                        widget.members.map((member) {
+                      return CheckboxListTile(
+                        value:
+                            selectedMembers.contains(
+                                member),
+
+                        title: Text(member),
+
+                        onChanged: (value) {
+                          setState(() {
+                            if (value == true) {
+                              selectedMembers
+                                  .add(member);
+                            } else {
+                              selectedMembers
+                                  .remove(member);
+                            }
+                          });
+                        },
+                      );
+                    }).toList(),
+                  ),
+
+                  const SizedBox(height: 24),
+
+                  // 📸 RECEIPT IMAGE
+                  Container(
+                    height: 140,
+                    width: double.infinity,
+
+                    decoration: BoxDecoration(
+                      color: const Color(0xFFF4F4F4),
+
+                      borderRadius:
+                          BorderRadius.circular(24),
+
+                      border: Border.all(
+                        color: Colors.grey.shade300,
+                      ),
+                    ),
+
+                    child: const Center(
+                      child: Text(
+                        "📸 Upload Receipt Image",
+                        style: TextStyle(
+                          color: Colors.grey,
+                          fontSize: 16,
+                        ),
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 35),
+
+                  // 🚀 SAVE BUTTON
+                  SizedBox(
+                    width: double.infinity,
+
+                    child: ElevatedButton(
+                      style:
+                          ElevatedButton.styleFrom(
+                        backgroundColor: Colors.black,
+                        foregroundColor: Colors.white,
+
+                        padding:
+                            const EdgeInsets.symmetric(
+                          vertical: 20,
+                        ),
+
+                        shape:
+                            RoundedRectangleBorder(
+                          borderRadius:
+                              BorderRadius.circular(
+                                  22),
+                        ),
+                      ),
+
+                      onPressed: () {
+                        ScaffoldMessenger.of(context)
+                            .showSnackBar(
+                          const SnackBar(
+                            content: Text(
+                              "Expense Saved ✨",
+                            ),
+                          ),
+                        );
+                      },
+
+                      child: const Text(
+                        "Save Expense",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight:
+                              FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+}
+🟢 STEP 3 — CONNECT GROUP PAGE → RECEIPT PAGE
+
+Go to:
+
+group_creation_page.dart
+🟡 IMPORT THIS AT TOP
+import 'receipt_page.dart';
+🟡 FIND THIS
+onPressed: () {
+  // 🔜 receipt system next phase
+},
+🟢 REPLACE WITH THIS
+onPressed: () {
+  if (groupController.text.isEmpty ||
+      members.isEmpty) {
+    return;
+  }
+
+  Navigator.push(
+    context,
+    MaterialPageRoute(
+      builder: (context) => ReceiptPage(
+        groupName: groupController.text,
+        members: members,
+      ),
+    ),
+  );
+},
+🎮 WHAT YOU JUST BUILT
+
+Now your app flow becomes:
+
+World
+ ↓
+Timeline
+ ↓
+Group Creation
+ ↓
+Receipt Unfold
+ ↓
+Expense Input
+✨ WHAT MAKES THIS PHASE IMPORTANT
+
+You now officially have:
+
+✅ real expense interaction
+✅ participant system
+✅ payer system
+✅ split selection system
+✅ expandable cinematic UI feel
+✅ receipt concept foundation
+
+This is now beyond a normal CRUD school project.
+
+🚀 NEXT PHASE
+📊 PHASE 9 — ANALYTICS + SETTLE-UP ENGINE
+
+Next we will build:
+
+✅ settle-up calculation
+✅ debt tracking
+✅ analytics graphs
+✅ spending summaries
+✅ rabbit reactions
+✅ smart saver / overspending messages
+---------------------------------------------------
+🎮 OVERALL UPGRADE PLAN (IMPORTANT)
+
+We will upgrade in 4 layers:
+
+1. Background (receipt world feel)
+2. Crumpled → smooth transition
+3. Rabbit interaction animation
+4. UI polish (paper style)
+🧩 STEP 1 — ADD “CRUMPLED RECEIPT STATE”
+📍 ADD THIS at top of your State class
+🔴 ORIGINAL (you already have)
+late AnimationController _controller;
+late Animation<double> animation;
+🟢 ADD THIS BELOW IT
+bool isOpened = false; // 🧾 NEW: controls crumple → unfold state
+🧩 STEP 2 — MODIFY ANIMATION (IMPORTANT)
+📍 REPLACE THIS BLOCK
+🔴 ORIGINAL
+animation = CurvedAnimation(
+  parent: _controller,
+  curve: Curves.easeOutBack,
+);
+
+_controller.forward();
+🟢 REPLACE WITH (SMOOTHER “UNFOLD FEEL”)
+animation = CurvedAnimation(
+  parent: _controller,
+  curve: Curves.easeOutBack,
+);
+
+✔ REMOVE _controller.forward();
+✔ We will control it manually later
+
+🧩 STEP 3 — MAKE RECEIPT CLICKABLE (CRUMPLED → UNFOLD)
+📍 WRAP YOUR MAIN CONTAINER
+🔴 ORIGINAL
+child: Container(
+🟢 REPLACE WITH THIS WRAPPER
+child: GestureDetector(
+  onTap: () {
+    setState(() {
+      isOpened = true; // 🧾 unfold trigger
+      _controller.forward(from: 0); // replay animation
+    });
+  },
+
+  child: AnimatedScale(
+📍 THEN FIND END OF CONTAINER
+🔴 ORIGINAL END
+),
+🟢 REPLACE END WITH
+),
+),
+🧩 STEP 4 — ADD “CRUMPLED EFFECT (CLOSED STATE)”
+📍 FIND THIS LINE
+ScaleTransition(
+🟢 REPLACE WITH CONDITIONAL STYLE
+AnimatedScale(
+  scale: isOpened ? 1.0 : 0.6, // 🧾 crumpled effect
+  duration: const Duration(milliseconds: 400),
+🧩 STEP 5 — ADD RABBIT “PULL RECEIPT” ANIMATION
+📍 ADD THIS ABOVE Container (inside body)
+
+Find:
+
+child: Center(
+🟢 ADD STACK WRAPPER
+REPLACE THIS:
+child: Center(
+WITH THIS:
+child: Stack(
+  alignment: Alignment.center,
+  children: [
+📍 ADD RABBIT (NEW FEATURE 🔥)
+🟢 INSERT ABOVE YOUR RECEIPT CONTAINER
+if (!isOpened)
+  Positioned(
+    bottom: 50,
+    child: Lottie.asset(
+      "assets/rabbits/Rabbit Kick Scooter.json",
+      height: 120,
+    ),
+  ),
+
+👉 This makes rabbit appear BEFORE opening receipt
+
+📍 CLOSE STACK AT END
+ADD THIS AT END
+  ],
+),
+🧩 STEP 6 — ADD “PAPER STYLE UI (DISNEY FEEL)”
+📍 FIND THIS:
+color: Colors.white,
+🟢 REPLACE WITH:
+color: const Color(0xFFFFFBF2), // 🧾 warm paper color
+📍 ADD DASHED BORDER FEEL (NEW)
+
+Inside BoxDecoration add:
+
+border: Border.all(
+  color: Colors.black12,
+  width: 1.2,
+),
+🧩 STEP 7 — ADD “UNFOLD EFFECT UI CHANGE”
+📍 FIND COLUMN START
+child: Column(
+🟢 REPLACE WITH CONDITIONAL CONTENT
+child: AnimatedOpacity(
+  duration: const Duration(milliseconds: 400),
+  opacity: isOpened ? 1 : 0.3, // 🧾 fade-in effect
+
+  child: Column(
+📍 CLOSE IT
+
+Add:
+
+),
+),
+🎮 FINAL RESULT AFTER ALL CHANGES
+
+You will get:
+
+🧾 BEFORE TAP
+crumpled small receipt
+rabbit waiting beside it
+dim UI
+🧾 AFTER TAP
+receipt expands smoothly
+rabbit disappears / "helps open"
+form fades in
+feels like Disney diary animation

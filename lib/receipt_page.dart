@@ -16,6 +16,8 @@ class ReceiptPage extends StatefulWidget {
 
 class _ReceiptPageState extends State<ReceiptPage>
     with SingleTickerProviderStateMixin {
+
+  // 🧾 controllers
   final TextEditingController descriptionController =
       TextEditingController();
 
@@ -23,12 +25,14 @@ class _ReceiptPageState extends State<ReceiptPage>
       TextEditingController();
 
   String? selectedPayer;
-
   List<String> selectedMembers = [];
 
+  // 🎬 animation
   late AnimationController _controller;
-
   late Animation<double> animation;
+
+  // 🧾 NEW: crumple → unfold state
+  bool isOpened = false;
 
   @override
   void initState() {
@@ -43,8 +47,6 @@ class _ReceiptPageState extends State<ReceiptPage>
       parent: _controller,
       curve: Curves.easeOutBack,
     );
-
-    _controller.forward();
   }
 
   @override
@@ -61,269 +63,211 @@ class _ReceiptPageState extends State<ReceiptPage>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-
         title: Text(
           "${widget.groupName} Receipt 🧾",
-          style: const TextStyle(
-            color: Colors.black,
-          ),
+          style: const TextStyle(color: Colors.black),
         ),
       ),
 
       body: Center(
-        child: ScaleTransition(
-          scale: animation,
 
-          child: Container(
-            margin: const EdgeInsets.all(24),
-            padding: const EdgeInsets.all(24),
+        // 🧾 OUTER ANIMATION (crumple effect)
+        child: AnimatedScale(
+          scale: isOpened ? 1.0 : 0.75,
+          duration: const Duration(milliseconds: 400),
 
-            decoration: BoxDecoration(
-              color: Colors.white,
-              borderRadius: BorderRadius.circular(30),
+          child: GestureDetector(
+            onTap: () {
+              setState(() {
+                isOpened = true;
+                _controller.forward(from: 0);
+              });
+            },
 
-              boxShadow: const [
-                BoxShadow(
-                  blurRadius: 20,
-                  color: Colors.black12,
-                  offset: Offset(0, 10),
-                ),
-              ],
-            ),
+            // 🧾 MAIN RECEIPT CONTAINER
+            child: Container(
+              margin: const EdgeInsets.all(24),
+              padding: const EdgeInsets.all(24),
 
-            child: SingleChildScrollView(
-              child: Column(
-                crossAxisAlignment:
-                    CrossAxisAlignment.start,
+              decoration: BoxDecoration(
+                color: const Color(0xFFFFFBF2), // paper feel
+                borderRadius: BorderRadius.circular(30),
 
-                children: [
-                  const Center(
-                    child: Text(
-                      "Expense Receipt ✨",
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 35),
-
-                  // 📝 DESCRIPTION
-                  const Text(
-                    "Expense Description",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  TextField(
-                    controller: descriptionController,
-
-                    decoration: InputDecoration(
-                      hintText:
-                          "Example: Korean BBQ Dinner 🍖",
-
-                      filled: true,
-                      fillColor: const Color(0xFFF4F4F4),
-
-                      border: OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(18),
-
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // 💰 AMOUNT
-                  const Text(
-                    "Amount",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  TextField(
-                    controller: amountController,
-                    keyboardType:
-                        TextInputType.number,
-
-                    decoration: InputDecoration(
-                      hintText: "0.00",
-
-                      filled: true,
-                      fillColor: const Color(0xFFF4F4F4),
-
-                      border: OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(18),
-
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // 👤 WHO PAID
-                  const Text(
-                    "Who Paid?",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 10),
-
-                  DropdownButtonFormField<String>(
-                    value: selectedPayer,
-
-                    items: widget.members.map((member) {
-                      return DropdownMenuItem(
-                        value: member,
-                        child: Text(member),
-                      );
-                    }).toList(),
-
-                    onChanged: (value) {
-                      setState(() {
-                        selectedPayer = value;
-                      });
-                    },
-
-                    decoration: InputDecoration(
-                      filled: true,
-                      fillColor: const Color(0xFFF4F4F4),
-
-                      border: OutlineInputBorder(
-                        borderRadius:
-                            BorderRadius.circular(18),
-
-                        borderSide: BorderSide.none,
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // 👥 SPLIT AMONG
-                  const Text(
-                    "Split Among",
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-
-                  const SizedBox(height: 12),
-
-                  Column(
-                    children:
-                        widget.members.map((member) {
-                      return CheckboxListTile(
-                        value:
-                            selectedMembers.contains(
-                                member),
-
-                        title: Text(member),
-
-                        onChanged: (value) {
-                          setState(() {
-                            if (value == true) {
-                              selectedMembers
-                                  .add(member);
-                            } else {
-                              selectedMembers
-                                  .remove(member);
-                            }
-                          });
-                        },
-                      );
-                    }).toList(),
-                  ),
-
-                  const SizedBox(height: 24),
-
-                  // 📸 RECEIPT IMAGE
-                  Container(
-                    height: 140,
-                    width: double.infinity,
-
-                    decoration: BoxDecoration(
-                      color: const Color(0xFFF4F4F4),
-
-                      borderRadius:
-                          BorderRadius.circular(24),
-
-                      border: Border.all(
-                        color: Colors.grey.shade300,
-                      ),
-                    ),
-
-                    child: const Center(
-                      child: Text(
-                        "📸 Upload Receipt Image",
-                        style: TextStyle(
-                          color: Colors.grey,
-                          fontSize: 16,
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  const SizedBox(height: 35),
-
-                  // 🚀 SAVE BUTTON
-                  SizedBox(
-                    width: double.infinity,
-
-                    child: ElevatedButton(
-                      style:
-                          ElevatedButton.styleFrom(
-                        backgroundColor: Colors.black,
-                        foregroundColor: Colors.white,
-
-                        padding:
-                            const EdgeInsets.symmetric(
-                          vertical: 20,
-                        ),
-
-                        shape:
-                            RoundedRectangleBorder(
-                          borderRadius:
-                              BorderRadius.circular(
-                                  22),
-                        ),
-                      ),
-
-                      onPressed: () {
-                        ScaffoldMessenger.of(context)
-                            .showSnackBar(
-                          const SnackBar(
-                            content: Text(
-                              "Expense Saved ✨",
-                            ),
-                          ),
-                        );
-                      },
-
-                      child: const Text(
-                        "Save Expense",
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight:
-                              FontWeight.bold,
-                        ),
-                      ),
-                    ),
+                boxShadow: const [
+                  BoxShadow(
+                    blurRadius: 20,
+                    color: Colors.black12,
+                    offset: Offset(0, 10),
                   ),
                 ],
+              ),
+
+              // 🧾 CONTENT INSIDE RECEIPT
+              child: SingleChildScrollView(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+
+                  children: [
+
+                    const Center(
+                      child: Text(
+                        "Expense Receipt ✨",
+                        style: TextStyle(
+                          fontSize: 28,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 35),
+
+                    // 📝 DESCRIPTION
+                    const Text("Expense Description",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+
+                    const SizedBox(height: 10),
+
+                    TextField(
+                      controller: descriptionController,
+                      decoration: InputDecoration(
+                        hintText: "Example: Korean BBQ 🍖",
+                        filled: true,
+                        fillColor: const Color(0xFFF4F4F4),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // 💰 AMOUNT
+                    const Text("Amount",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+
+                    const SizedBox(height: 10),
+
+                    TextField(
+                      controller: amountController,
+                      keyboardType: TextInputType.number,
+                      decoration: InputDecoration(
+                        hintText: "0.00",
+                        filled: true,
+                        fillColor: const Color(0xFFF4F4F4),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // 👤 WHO PAID
+                    const Text("Who Paid?",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+
+                    const SizedBox(height: 10),
+
+                    DropdownButtonFormField<String>(
+                      value: selectedPayer,
+                      items: widget.members.map((member) {
+                        return DropdownMenuItem(
+                          value: member,
+                          child: Text(member),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          selectedPayer = value;
+                        });
+                      },
+                      decoration: InputDecoration(
+                        filled: true,
+                        fillColor: const Color(0xFFF4F4F4),
+                        border: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(18),
+                          borderSide: BorderSide.none,
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // 👥 SPLIT
+                    const Text("Split Among",
+                        style: TextStyle(fontWeight: FontWeight.bold)),
+
+                    const SizedBox(height: 10),
+
+                    Column(
+                      children: widget.members.map((member) {
+                        return CheckboxListTile(
+                          value: selectedMembers.contains(member),
+                          title: Text(member),
+                          onChanged: (value) {
+                            setState(() {
+                              if (value == true) {
+                                selectedMembers.add(member);
+                              } else {
+                                selectedMembers.remove(member);
+                              }
+                            });
+                          },
+                        );
+                      }).toList(),
+                    ),
+
+                    const SizedBox(height: 24),
+
+                    // 📸 RECEIPT UPLOAD
+                    Container(
+                      height: 140,
+                      width: double.infinity,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFF4F4F4),
+                        borderRadius: BorderRadius.circular(24),
+                        border: Border.all(color: Colors.grey.shade300),
+                      ),
+                      child: const Center(
+                        child: Text(
+                          "📸 Upload Receipt Image",
+                          style: TextStyle(color: Colors.grey),
+                        ),
+                      ),
+                    ),
+
+                    const SizedBox(height: 35),
+
+                    // 🚀 SAVE BUTTON
+                    SizedBox(
+                      width: double.infinity,
+                      child: ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.black,
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(vertical: 20),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(22),
+                          ),
+                        ),
+                        onPressed: () {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text("Expense Saved ✨"),
+                            ),
+                          );
+                        },
+                        child: const Text(
+                          "Save Expense",
+                          style: TextStyle(fontSize: 18),
+                        ),
+                      ),
+                    ),
+
+                  ],
+                ),
               ),
             ),
           ),
