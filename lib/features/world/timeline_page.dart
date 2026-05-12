@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'group_creation_page.dart';
+import 'package:expense_splitter/features/group/group_creation_page.dart';
 
 class TimelinePage extends StatefulWidget {
   final String worldTitle;

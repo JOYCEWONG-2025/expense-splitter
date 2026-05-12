@@ -5,7 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'world_home.dart';
+import 'features/world/world_home.dart';
 import 'package:lottie/lottie.dart';
 
 const List<String> expenseCategories = [
@@ -259,7 +259,7 @@ class _MyAppState extends State<MyApp> {
                     Navigator.push(
                       context,
                       MaterialPageRoute(
-                        builder: (context) => const WorldHome(),
+                        builder: (context) => WorldHome(),
                       ),
                     );
                   },

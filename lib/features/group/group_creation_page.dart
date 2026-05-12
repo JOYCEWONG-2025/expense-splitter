@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'receipt_page.dart';
+import 'package:expense_splitter/features/receipt/receipt_page.dart';
+import 'package:expense_splitter/features/models/rabbit_model.dart';
+import 'package:expense_splitter/widgets/rabbit_card.dart';
 
 class GroupCreationPage extends StatefulWidget {
   final String worldTitle;
@@ -20,7 +22,7 @@ class _GroupCreationPageState extends State<GroupCreationPage> {
 
   final TextEditingController memberController = TextEditingController();
 
-  List<String> members = [];
+  List<RabbitModel> members = [];
 
   @override
   Widget build(BuildContext context) {
@@ -123,7 +125,13 @@ class _GroupCreationPageState extends State<GroupCreationPage> {
                   onPressed: () {
                     if (memberController.text.isNotEmpty) {
                       setState(() {
-                        members.add(memberController.text);
+                        members.add(
+                          RabbitModel(
+                            name: memberController.text,
+                            rabbitAsset:
+                                "assets/rabbits/Rabbit Kick Scooter.json",
+                          ),
+                        );
                         memberController.clear();
                       });
                     }
@@ -142,33 +150,10 @@ class _GroupCreationPageState extends State<GroupCreationPage> {
                 itemCount: members.length,
 
                 itemBuilder: (context, index) {
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 14),
+                  return RabbitCard(
+                    rabbitName: members[index].name,
 
-                    padding: const EdgeInsets.all(18),
-
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-
-                    child: Row(
-                      children: [
-                        const Text("🐰", style: TextStyle(fontSize: 26)),
-
-                        const SizedBox(width: 14),
-
-                        Expanded(
-                          child: Text(
-                            members[index],
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
+                    rabbitAsset: members[index].rabbitAsset,
                   );
                 },
               ),
@@ -201,7 +186,9 @@ class _GroupCreationPageState extends State<GroupCreationPage> {
                     MaterialPageRoute(
                       builder: (context) => ReceiptPage(
                         groupName: groupController.text,
-                        members: members,
+
+                        // 🐰 convert RabbitModel list into String list
+                        members: members.map((rabbit) => rabbit.name).toList(),
                       ),
                     ),
                   );
