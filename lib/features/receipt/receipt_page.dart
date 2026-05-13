@@ -426,26 +426,45 @@ class _ReceiptPageState extends State<ReceiptPage>
                               const SizedBox(height: 4),
 
                               // ================================
-                              // 🏷️ MEMBER NAME LABEL
+                              // 🏷️ MEMBER NAME LABEL (SMART POSITION)
                               // ================================
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 10,
-                                  vertical: 4,
-                                ),
+                              Transform.translate(
+                                offset: showReceipt
+                                    ? Offset(
+                                        // move label slightly outward so it goes into empty space
+                                        pos.dx * 0.15,
+                                        pos.dy * 0.15,
+                                      )
+                                    : const Offset(0, 0),
 
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.9),
+                                child: Container(
+                                  margin: const EdgeInsets.only(top: 6),
 
-                                  borderRadius: BorderRadius.circular(10),
-                                ),
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                    vertical: 4,
+                                  ),
 
-                                child: Text(
-                                  widget.members[i],
+                                  decoration: BoxDecoration(
+                                    color: Colors.white.withOpacity(0.9),
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: showReceipt
+                                        ? [
+                                            const BoxShadow(
+                                              blurRadius: 8,
+                                              color: Colors.black12,
+                                            ),
+                                          ]
+                                        : [],
+                                  ),
 
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.w600,
-                                    fontSize: 13,
+                                  child: Text(
+                                    widget.members[i],
+
+                                    style: const TextStyle(
+                                      fontWeight: FontWeight.w600,
+                                      fontSize: 13,
+                                    ),
                                   ),
                                 ),
                               ),
