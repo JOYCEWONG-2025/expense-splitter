@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
+import 'dart:ui';
 
 class ReceiptPage extends StatefulWidget {
   final String groupName;
@@ -18,78 +19,134 @@ class ReceiptPage extends StatefulWidget {
 
 class _ReceiptPageState extends State<ReceiptPage>
     with TickerProviderStateMixin {
+  // 🧾 ORIGINAL CONTROLLERS (KEEP LOGIC)
+  final TextEditingController descriptionController = TextEditingController();
 
-  // 🧾 controllers (ORIGINAL - KEEP)
-  final TextEditingController descriptionController =
-      TextEditingController();
-
-  final TextEditingController amountController =
-      TextEditingController();
+  final TextEditingController amountController = TextEditingController();
 
   String? selectedPayer;
   List<String> selectedMembers = [];
 
-  // 🎬 original animation (KEEP)
-  late AnimationController _controller;
+  // 🎬 RECEIPT ANIMATION (KEEP ORIGINAL LOGIC)
+  late AnimationController _receiptController;
   late Animation<double> animation;
 
-  // ================================
-  // 🐰 ADD: CIRCLE ANIMATION CONTROLLER
-  // ================================
+  // 🐰 RABBIT CIRCLE ANIMATION
   late AnimationController _circleController;
+
+  // ================================
+  // 🧾 ADD: RECEIPT UNFOLD ANIMATION
+  // ================================
+  late AnimationController _unfoldController;
+  late Animation<double> _scaleAnim;
+  late Animation<double> _rotateAnim;
+  late Animation<double> _fadeAnim;
+
+  // ================================
+  // ✨ ADD: FLOATING RECEIPT BALL ANIMATION
+  // ================================
+  late AnimationController _floatingController;
+
+  late Animation<double> _floatingRotate;
+  late Animation<double> _floatingScale;
+  late Animation<double> _floatingMove;
+  late Animation<double> _iconGlow;
+
+  // ================================
+  // 🧠 FLOW CONTROL
+  // ================================
+  bool showCircle = false;
+  bool showReceipt = false;
 
   @override
   void initState() {
     super.initState();
 
-    // ================================
-    // ORIGINAL RECEIPT ANIMATION
-    // ================================
-    _controller = AnimationController(
+    // 🧾 ORIGINAL RECEIPT ANIMATION
+    _receiptController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
     );
 
     animation = CurvedAnimation(
-      parent: _controller,
-      curve: Curves.easeOutBack,
+      parent: _receiptController,
+      curve: Curves.easeOut, // safer for opacity
     );
 
-    // ================================
-    // 🐰 ADD: CIRCLE ANIMATION INIT
-    // ================================
+    // 🐰 RABBIT CIRCLE ANIMATION
     _circleController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 1200),
     );
 
-    _circleController.forward();
+    // ================================
+    // 🧾 ADD: REAL RECEIPT UNFOLD EFFECT
+    // ================================
+    _unfoldController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 900),
+    );
+
+    // ================================
+    // ✨ FLOATING RECEIPT BALL
+    // ================================
+    _floatingController = AnimationController(
+      vsync: this,
+      duration: const Duration(seconds: 2),
+    )..repeat(reverse: true);
+
+    _floatingRotate = Tween<double>(begin: -0.12, end: 0.12).animate(
+      CurvedAnimation(parent: _floatingController, curve: Curves.easeInOut),
+    );
+
+    _floatingScale = Tween<double>(begin: 0.95, end: 1.05).animate(
+      CurvedAnimation(parent: _floatingController, curve: Curves.easeInOut),
+    );
+
+    _floatingMove = Tween<double>(begin: -6, end: 6).animate(
+      CurvedAnimation(parent: _floatingController, curve: Curves.easeInOut),
+    );
+
+    _iconGlow = Tween<double>(begin: 0.6, end: 1.0).animate(
+      CurvedAnimation(parent: _floatingController, curve: Curves.easeInOut),
+    );
+
+    final curve = CurvedAnimation(
+      parent: _unfoldController,
+      curve: Curves.easeOutBack,
+    );
+
+    _scaleAnim = Tween<double>(begin: 0.3, end: 1.0).animate(curve);
+
+    _rotateAnim = Tween<double>(begin: -0.35, end: 0.0).animate(curve);
+
+    _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(curve);
+
+    // 🐰 START RABBITS FIRST
+    Future.delayed(const Duration(milliseconds: 300), () {
+      setState(() => showCircle = true);
+      _circleController.forward();
+    });
   }
 
   @override
   void dispose() {
-    _controller.dispose();
-
-    // 🐰 ADD
+    _receiptController.dispose();
     _circleController.dispose();
+
+    // 🧾 ADD
+    _unfoldController.dispose();
+    _floatingController.dispose();
 
     super.dispose();
   }
 
   // ================================
-  // 🐰 ADD: SAFE POSITION LOGIC
+  // 🐰 RABBIT POSITION LOGIC
   // ================================
   Offset getPosition(int index, int total, double radius) {
-    if (total == 1) {
-      return const Offset(0, 0);
-    }
-
-    if (total == 2) {
-      double angle = index == 0 ? 0 : pi;
-      return Offset(
-        radius * _circleController.value * cos(angle),
-        radius * _circleController.value * sin(angle),
-      );
+    if (total <= 1) {
+      return Offset.zero;
     }
 
     final angle = (2 * pi * index) / total;
@@ -100,6 +157,31 @@ class _ReceiptPageState extends State<ReceiptPage>
     );
   }
 
+  // ================================
+  // 🧾 OPEN RECEIPT
+  // ================================
+  void openReceipt() {
+    setState(() {
+      showReceipt = true;
+    });
+
+    _receiptController.forward(from: 0);
+    _unfoldController.forward(from: 0);
+  }
+
+  // ================================
+  // 🐰 MEMBER SELECT LOGIC
+  // ================================
+  void toggleMember(String member) {
+    setState(() {
+      if (selectedMembers.contains(member)) {
+        selectedMembers.remove(member);
+      } else {
+        selectedMembers.add(member);
+      }
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -108,174 +190,489 @@ class _ReceiptPageState extends State<ReceiptPage>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text(
-          "${widget.groupName} Receipt 🧾",
-          style: const TextStyle(color: Colors.black),
-        ),
+        title: Text("${widget.groupName} 🐰 Receipt"),
       ),
 
       body: Center(
         child: Stack(
           alignment: Alignment.center,
           children: [
-
             // ================================
-            // 🐰 ADD: RABBITS FORMING CIRCLE
+            // 🐰 RABBITS FORMING CIRCLE
             // ================================
-            Positioned.fill(
-              child: AnimatedBuilder(
+            if (showCircle)
+              AnimatedBuilder(
                 animation: _circleController,
                 builder: (context, child) {
                   return Stack(
                     alignment: Alignment.center,
+
                     children: List.generate(widget.members.length, (i) {
+                      final animatedRadius = lerpDouble(
+                        155,
+                        widget.members.length <= 4 ? 420 : 360,
+                        _unfoldController.value,
+                      )!;
+
                       final pos = getPosition(
                         i,
                         widget.members.length,
-                        120,
+                        animatedRadius,
                       );
-
                       return Transform.translate(
                         offset: pos,
-                        child: Lottie.asset(
-                          "assets/rabbits/Rabbit Kick Scooter.json",
-                          width: 60,
-                          height: 60,
+
+                        child: Transform.rotate(
+                          angle: showReceipt ? (pos.dx > 0 ? -0.12 : 0.12) : 0,
+
+                          child: Column(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              // ================================
+                              // 🐰 ANIMATED RABBIT
+                              // ================================
+                              GestureDetector(
+                                onTap: () => toggleMember(widget.members[i]),
+
+                                child: AnimatedContainer(
+                                  duration: const Duration(milliseconds: 250),
+
+                                  padding: const EdgeInsets.all(6),
+
+                                  decoration: BoxDecoration(
+                                    shape: BoxShape.circle,
+
+                                    boxShadow:
+                                        selectedMembers.contains(
+                                          widget.members[i],
+                                        )
+                                        ? [
+                                            BoxShadow(
+                                              color: Colors.amber.withOpacity(
+                                                0.7,
+                                              ),
+                                              blurRadius: 25,
+                                              spreadRadius: 4,
+                                            ),
+                                          ]
+                                        : [],
+                                  ),
+
+                                  child: AnimatedScale(
+                                    duration: const Duration(milliseconds: 250),
+
+                                    scale:
+                                        selectedMembers.contains(
+                                          widget.members[i],
+                                        )
+                                        ? 1.15
+                                        : 1.0,
+
+                                    child: Lottie.asset(
+                                      "assets/rabbits/Rabbit Kick Scooter.json",
+                                      width: 145,
+                                      height: 145,
+                                    ),
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 4),
+
+                              // ================================
+                              // 🏷️ MEMBER NAME LABEL
+                              // ================================
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 10,
+                                  vertical: 4,
+                                ),
+
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.9),
+
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+
+                                child: Text(
+                                  widget.members[i],
+
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 13,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       );
                     }),
                   );
                 },
               ),
-            ),
 
             // ================================
-            // 🧾 ORIGINAL RECEIPT UI (UNCHANGED)
+            // 🧾 FLOATING MAGIC CRUMPLED RECEIPT BALL
             // ================================
-            if (!(_circleController.isAnimating))
-              GestureDetector(
-                child: Container(
-                  width: 85,
-                  height: 85,
-                  decoration: const BoxDecoration(
-                    color: Colors.white,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        blurRadius: 20,
-                        color: Colors.black26,
-                      )
-                    ],
-                  ),
-                  child: const Icon(Icons.receipt_long, size: 50),
-                ),
+            if (showCircle && !showReceipt)
+              AnimatedBuilder(
+                animation: _floatingController,
+
+                builder: (context, child) {
+                  return Transform.translate(
+                    offset: Offset(95, _floatingMove.value),
+
+                    child: Transform.rotate(
+                      angle: _floatingRotate.value,
+
+                      child: Transform.scale(
+                        scale: _floatingScale.value,
+
+                        child: GestureDetector(
+                          onTap: openReceipt,
+
+                          child: Stack(
+                            alignment: Alignment.center,
+
+                            children: [
+                              // 🧾 CRUMPLED BALL
+                              Image.asset(
+                                "assets/images/crumpled_ball.png",
+                                width: 165,
+                                height: 165,
+                                fit: BoxFit.contain,
+                              ),
+
+                              // ✨ TAP ME GLOW ICON
+                              Opacity(
+                                opacity: _iconGlow.value,
+
+                                child: Container(
+                                  width: 52,
+                                  height: 52,
+
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+
+                                    shape: BoxShape.circle,
+
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.amber.withOpacity(0.7),
+                                        blurRadius: 18,
+                                        spreadRadius: 3,
+                                      ),
+                                    ],
+                                  ),
+
+                                  child: const Icon(
+                                    Icons.touch_app_rounded,
+                                    size: 28,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ),
+                  );
+                },
               ),
 
-            if (_circleController.isCompleted)
-              ScaleTransition(
-                scale: animation,
-                child: Container(
-                  margin: const EdgeInsets.all(24),
-                  padding: const EdgeInsets.all(24),
+            // ================================
+            // 🧾 UNFOLDED RECEIPT PAPER
+            // ================================
+            if (showReceipt)
+              Transform.translate(
+                offset: Offset.zero,
+                child: ScaleTransition(
+                  scale: animation,
 
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFFFFBF2),
-                    borderRadius: BorderRadius.circular(30),
-                    boxShadow: const [
-                      BoxShadow(
-                        blurRadius: 20,
-                        color: Colors.black12,
-                        offset: Offset(0, 10),
+                  child: AnimatedBuilder(
+                    animation: _unfoldController,
+
+                    builder: (context, child) {
+                      return Opacity(
+                        opacity: _fadeAnim.value.clamp(0.0, 1.0),
+
+                        child: Transform(
+                          alignment: Alignment.center,
+
+                          transform: Matrix4.identity()
+                            ..rotateZ(_rotateAnim.value)
+                            ..scale(_scaleAnim.value)
+                            ..translate(0.0, 10.0 * (1 - _fadeAnim.value)),
+
+                          child: child,
+                        ),
+                      );
+                    },
+
+                    child: Container(
+                      width: 330,
+                      height: 620,
+
+                      margin: const EdgeInsets.all(18),
+
+                      decoration: BoxDecoration(
+                        image: const DecorationImage(
+                          image: AssetImage("assets/images/receipt.jpg"),
+                          fit: BoxFit.cover,
+                        ),
+
+                        borderRadius: BorderRadius.circular(24),
+
+                        boxShadow: const [
+                          BoxShadow(
+                            blurRadius: 25,
+                            color: Colors.black26,
+                            offset: Offset(0, 12),
+                          ),
+                        ],
                       ),
-                    ],
-                  ),
 
-                  child: SingleChildScrollView(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
+                      child: Padding(
+                        padding: const EdgeInsets.fromLTRB(28, 34, 28, 28),
 
-                        const Text(
-                          "Expense Receipt ✨",
-                          style: TextStyle(
-                            fontSize: 28,
-                            fontWeight: FontWeight.bold,
+                        child: SingleChildScrollView(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+
+                            children: [
+                              // ================================
+                              // 🧾 DESCRIPTION
+                              // ================================
+                              const Text(
+                                "Expense Description",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              TextField(
+                                controller: descriptionController,
+
+                                decoration: InputDecoration(
+                                  hintText: "Example: Korean BBQ 🍖",
+
+                                  filled: true,
+                                  fillColor: Colors.white.withOpacity(0.75),
+
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(18),
+
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 24),
+
+                              // ================================
+                              // 💰 AMOUNT
+                              // ================================
+                              const Text(
+                                "Amount",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              TextField(
+                                controller: amountController,
+                                keyboardType: TextInputType.number,
+
+                                decoration: InputDecoration(
+                                  hintText: "0.00",
+
+                                  filled: true,
+                                  fillColor: Colors.white.withOpacity(0.75),
+
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(18),
+
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 24),
+
+                              // ================================
+                              // 👤 WHO PAID
+                              // ================================
+                              const Text(
+                                "Who Paid?",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+
+                              const SizedBox(height: 10),
+
+                              DropdownButtonFormField<String>(
+                                value: selectedPayer,
+
+                                items: widget.members.map((member) {
+                                  return DropdownMenuItem(
+                                    value: member,
+                                    child: Text(member),
+                                  );
+                                }).toList(),
+
+                                onChanged: (value) {
+                                  setState(() {
+                                    selectedPayer = value;
+                                  });
+                                },
+
+                                decoration: InputDecoration(
+                                  filled: true,
+                                  fillColor: Colors.white.withOpacity(0.75),
+
+                                  border: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(18),
+
+                                    borderSide: BorderSide.none,
+                                  ),
+                                ),
+                              ),
+
+                              const SizedBox(height: 24),
+
+                              // ================================
+                              // 🐰 SPLIT AMONG
+                              // ================================
+                              const Text(
+                                "Split Among",
+                                style: TextStyle(fontWeight: FontWeight.bold),
+                              ),
+
+                              const SizedBox(height: 14),
+
+                              Wrap(
+                                spacing: 12,
+                                runSpacing: 12,
+
+                                children: widget.members.map((member) {
+                                  final isSelected = selectedMembers.contains(
+                                    member,
+                                  );
+
+                                  return GestureDetector(
+                                    onTap: () => toggleMember(member),
+
+                                    child: AnimatedContainer(
+                                      duration: const Duration(
+                                        milliseconds: 250,
+                                      ),
+
+                                      padding: const EdgeInsets.symmetric(
+                                        horizontal: 18,
+                                        vertical: 14,
+                                      ),
+
+                                      decoration: BoxDecoration(
+                                        color: isSelected
+                                            ? Colors.black
+                                            : Colors.white,
+
+                                        borderRadius: BorderRadius.circular(20),
+
+                                        border: Border.all(
+                                          color: isSelected
+                                              ? Colors.black
+                                              : Colors.grey.shade300,
+                                        ),
+
+                                        boxShadow: isSelected
+                                            ? [
+                                                const BoxShadow(
+                                                  blurRadius: 10,
+                                                  color: Colors.black26,
+                                                ),
+                                              ]
+                                            : [],
+                                      ),
+
+                                      child: Text(
+                                        "🐰 $member",
+
+                                        style: TextStyle(
+                                          color: isSelected
+                                              ? Colors.white
+                                              : Colors.black,
+
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+
+                              const SizedBox(height: 28),
+
+                              // ================================
+                              // 📸 UPLOAD RECEIPT IMAGE
+                              // ================================
+                              Container(
+                                height: 150,
+                                width: double.infinity,
+
+                                decoration: BoxDecoration(
+                                  color: Colors.white.withOpacity(0.75),
+
+                                  borderRadius: BorderRadius.circular(22),
+
+                                  border: Border.all(
+                                    color: Colors.grey.shade300,
+                                  ),
+                                ),
+
+                                child: const Center(
+                                  child: Text("📸 Upload Receipt Image"),
+                                ),
+                              ),
+
+                              const SizedBox(height: 34),
+
+                              // ================================
+                              // 💾 SAVE BUTTON
+                              // ================================
+                              SizedBox(
+                                width: double.infinity,
+
+                                child: ElevatedButton(
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: Colors.black,
+
+                                    foregroundColor: Colors.white,
+
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 20,
+                                    ),
+
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(22),
+                                    ),
+                                  ),
+
+                                  onPressed: () {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text("Expense Saved ✨"),
+                                      ),
+                                    );
+                                  },
+
+                                  child: const Text("Save Expense"),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-
-                        const SizedBox(height: 20),
-
-                        TextField(
-                          controller: descriptionController,
-                          decoration: const InputDecoration(
-                            hintText: "Expense Description",
-                          ),
-                        ),
-
-                        const SizedBox(height: 10),
-
-                        TextField(
-                          controller: amountController,
-                          keyboardType: TextInputType.number,
-                          decoration: const InputDecoration(
-                            hintText: "Amount",
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        DropdownButtonFormField<String>(
-                          value: selectedPayer,
-                          items: widget.members
-                              .map((e) => DropdownMenuItem(
-                                    value: e,
-                                    child: Text(e),
-                                  ))
-                              .toList(),
-                          onChanged: (value) {
-                            setState(() {
-                              selectedPayer = value;
-                            });
-                          },
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        Column(
-                          children: widget.members.map((member) {
-                            return CheckboxListTile(
-                              title: Text(member),
-                              value: selectedMembers.contains(member),
-                              onChanged: (val) {
-                                setState(() {
-                                  if (val == true) {
-                                    selectedMembers.add(member);
-                                  } else {
-                                    selectedMembers.remove(member);
-                                  }
-                                });
-                              },
-                            );
-                          }).toList(),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        Container(
-                          height: 120,
-                          color: Colors.grey[200],
-                          child: const Center(
-                            child: Text("Upload Receipt Image"),
-                          ),
-                        ),
-
-                        const SizedBox(height: 20),
-
-                        ElevatedButton(
-                          onPressed: () {},
-                          child: const Text("Save Expense"),
-                        ),
-                      ],
+                      ),
                     ),
                   ),
                 ),

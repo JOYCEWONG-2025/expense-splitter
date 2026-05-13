@@ -5186,3 +5186,496 @@ The app is now transitioning from a simple UI app into a:
 🎮 Rabbit World Experience System
 
 where each user becomes a character in the app world.
+
+-----------------------------------------------------------------------
+
+🐰 Core Feature Flow (CURRENT IMPLEMENTATION)
+1. Group Creation Stage 🧑‍🤝‍🧑
+
+📍 GroupCreationPage
+
+Users:
+
+Create group name
+Add member names (future rabbits)
+Confirm group setup
+Output:
+
+A list of participants:
+
+["Alice", "Ben", "Cindy"]
+2. Rabbit World Stage 🐰 (IN PROGRESS)
+
+📍 ReceiptPage (current prototype)
+
+Each member becomes:
+
+A rabbit character (Lottie animation)
+Positioned around a central receipt
+Features implemented:
+Rabbit spawning system
+Circle formation animation
+Special handling:
+1 user → center
+2 users → opposite positions
+3+ users → full circle layout
+3. Receipt System 🧾 (CURRENT)
+
+Inside ReceiptPage, users can:
+
+Enter expense description
+Enter amount
+Select payer
+Choose split members
+Upload receipt image (UI placeholder)
+Save expense
+🎬 Animation System (CURRENT STAGE)
+🐰 Rabbit Behaviour
+
+Rabbits:
+
+Represent group members
+Animate into a circular formation
+Use cosine/sine positioning logic
+Move smoothly using animation controllers
+🧾 Receipt Behaviour
+Receipt appears after animation trigger
+Uses scale + fade transition
+Acts as central “bill object”
+🧩 Key Design Concepts
+1. Visual-first expense system
+
+Instead of forms first → this app uses:
+
+Animation → Interaction → Input
+
+2. Rabbits = People abstraction
+
+Each rabbit represents:
+
+a real user in the group
+future selectable participant in split logic
+3. Circle formation = group relationship
+
+The circle visually represents:
+
+shared responsibility
+equal participation in expenses
+🚧 Current Limitations (IMPORTANT)
+
+At this stage, the app:
+
+❌ Does NOT yet support rabbit naming inside ReceiptPage
+❌ Does NOT yet calculate real split amounts
+❌ Does NOT yet include settle-up system
+❌ Does NOT yet include analytics graph
+❌ Receipt image upload is UI-only
+
+🔜 Next Development Phase
+🟣 Phase 2: Rabbit Identity System
+
+Planned features:
+
+Tap rabbit to highlight/select
+Show active participants
+Link selected rabbits to expense split logic
+🟣 Phase 3: Settlement System
+Auto calculation of who owes what
+Simple settle-up suggestions
+🟣 Phase 4: Analytics
+Spending breakdown per person
+Group expense visualization charts
+💡 Design Philosophy
+
+This project follows:
+
+“Make financial interactions feel visual, emotional, and interactive instead of form-based.”
+
+------------------------------------------------------------------------------------------------
+
+🧾 Receipt System Update Log
+✨ Features Added
+🐰 Rabbit Circle Animation
+
+Implemented animated rabbit characters using Lottie.
+
+Features:
+
+Rabbits spawn from center
+Form animated circular arrangement
+Supports dynamic member count
+Each rabbit displays member name label
+Rabbit tap selection system added
+🧾 Crumpled Receipt Interaction
+
+Added interactive receipt flow:
+
+Small crumpled receipt ball shown at center
+Receipt ball has tilt + rotation animation
+User taps receipt manually to open
+Receipt unfolds with scaling + rotation animation
+
+This creates a more realistic receipt-opening experience instead of instantly displaying the form.
+
+📜 Real Receipt UI
+
+Replaced basic form container with realistic receipt-paper design.
+
+Added:
+
+Receipt texture background image
+Large unfolded paper layout
+Paper shadow effect
+Soft rounded corners
+Receipt-style spacing and alignment
+👥 Expense Split System
+
+Implemented:
+
+Expense description field
+Amount field
+“Who Paid?” dropdown
+Split participant selection
+Dynamic selected member display
+Receipt image upload placeholder
+Save Expense button
+🐰 Participant Selection Improvements
+
+Changed old checkbox UI into:
+
+Animated rabbit member tags
+Tap-to-select interaction
+Active selection highlight
+Better visual feedback
+🛠 Errors Encountered & Solutions
+1. Multiple Ticker Error
+Error
+SingleTickerProviderStateMixin but multiple tickers were created
+Cause
+
+Multiple animation controllers were used with:
+
+SingleTickerProviderStateMixin
+Solution
+
+Changed to:
+
+TickerProviderStateMixin
+Good Practice
+
+Use:
+
+SingleTickerProviderStateMixin → one animation controller only
+TickerProviderStateMixin → multiple animation controllers
+🛠 Asset Loading Error
+Error
+Unable to load asset:
+assets/images/receipt.jpg
+HTTP 404
+Cause
+Incorrect asset path
+Asset not registered in pubspec.yaml
+Flutter Web cache issue
+Solution
+
+Updated:
+
+flutter:
+  assets:
+    - assets/images/
+
+Then ran:
+
+flutter clean
+flutter pub get
+flutter run
+Good Practice
+
+Always:
+
+keep asset names lowercase
+verify folder structure
+restart Flutter Web fully after adding assets
+🛠 Opacity Animation Crash
+Error
+opacity >= 0.0 && opacity <= 1.0
+Cause
+
+Curves.easeOutBack caused animation overshoot beyond valid opacity range.
+
+Solution
+
+Changed:
+
+opacity: _fadeAnim.value
+
+to:
+
+opacity: _fadeAnim.value.clamp(0.0, 1.0)
+
+Also used safer fade curve:
+
+Curves.easeOut
+Good Practice
+
+Avoid overshoot curves for opacity animations because opacity only accepts:
+
+0.0 → 1.0
+🎨 UI/UX Improvements
+Added
+Realistic receipt unfolding effect
+Bigger animated rabbits
+Rabbit name labels
+Interactive circle formation
+Smooth animation transitions
+Receipt paper texture styling
+🧠 Current System Flow
+1. Group members created
+2. Rabbits appear and form circle
+3. User selects rabbits
+4. Crumpled receipt appears
+5. User taps receipt
+6. Receipt unfolds realistically
+7. User fills expense form
+8. Expense saved
+✅ Current Project Status
+
+Implemented successfully:
+
+Rabbit animation system
+Circle positioning logic
+Realistic receipt interaction
+Expense form system
+Participant selection system
+Receipt texture UI
+Asset handling fixes
+Animation crash fixes
+
+Project now behaves like:
+
+interactive animated expense storybook
+
+---------------------------------------------------
+
+✨ Disney Style UI Update Log
+🐰 Rabbit Selection System Upgrade
+
+Upgraded the participant selection interaction from a technical UI style into a more animated Disney-style experience.
+
+❌ Previous Version
+
+Old selection system used:
+
+green outline border
+static selection feedback
+checkbox-like visual feeling
+
+This made the UI feel:
+
+technical and form-based
+
+instead of animated/story-like.
+
+✅ New Disney-Style Selection Effect
+
+Replaced green border with:
+
+✨ magical golden glow
+🐰 animated rabbit scaling
+🌟 softer visual feedback
+🎭 more emotional interaction feel
+🛠 Code Improvement
+Before
+border: Border.all(
+  color: Colors.green,
+)
+After
+boxShadow: [
+  BoxShadow(
+    color: Colors.amber.withOpacity(0.7),
+    blurRadius: 25,
+    spreadRadius: 4,
+  ),
+]
+🐰 Animated Rabbit Scaling
+
+Added:
+
+AnimatedScale
+
+to create bounce-like reaction when selecting rabbits.
+
+✨ Result
+
+When a rabbit is selected:
+
+rabbit glows softly
+rabbit scales slightly bigger
+interaction feels alive
+UI becomes more game-like and magical
+🧾 Receipt Ball Animation Improvement
+
+Enhanced crumpled receipt interaction.
+
+❌ Previous Version
+
+Receipt ball:
+
+only statically rotated
+no movement feeling
+looked like fixed icon
+✅ New Animation Style
+
+Added:
+
+floating motion
+soft wiggle rotation
+magical hovering feel
+✨ Result
+
+Receipt now:
+
+floats gently
+wiggles naturally
+feels enchanted
+matches Disney-style UI direction
+🎨 Current Visual Direction
+
+The app is now evolving from:
+
+expense management app
+
+towards:
+
+interactive animated rabbit expense adventure
+
+with:
+
+animated characters
+emotional interactions
+magical transitions
+storybook-inspired UI flow
+✅ Current Features Completed
+
+Implemented:
+
+rabbit circle animation
+rabbit name labels
+rabbit participant selection
+magical glow effects
+animated scaling feedback
+floating receipt ball
+realistic receipt unfolding
+receipt paper texture
+animated receipt transitions
+expense input system
+split participant system
+🧠 UI/UX Good Practice Applied
+Use Emotional Feedback Instead of Technical Indicators
+
+Instead of:
+
+green borders / checkbox feel
+
+Use:
+
+glow, scaling, floating, soft animation
+
+because animated feedback:
+
+feels more modern
+improves user engagement
+creates memorable interaction
+matches storytelling app design
+🚀 Next Planned Direction
+
+Possible next upgrades:
+
+rabbit reaction animations
+sparkle particles
+handwritten receipt font
+paper tear sound/animation
+settle-up visual graph
+animated analytics dashboard
+friendship/story progression system
+
+---------------------------------------------------
+
+A message on the flutter/lifecycle channel was discarded...
+
+This normally happens because:
+
+Flutter Web started
+a plugin/widget sent lifecycle events too early
+framework listener was not ready yet
+
+Your app can still run normally.
+
+🛠 Debug Warning (Flutter Web)
+Warning Encountered
+A message on the flutter/lifecycle channel was discarded before it could be handled.
+Cause
+
+This warning commonly happens in Flutter Web when:
+
+the app is still initializing
+plugins or animations start very early
+Flutter lifecycle listeners are not fully registered yet
+
+It is usually not caused by application logic errors.
+
+✅ Current Status
+
+The application still runs correctly:
+
+Rabbit circle animation works
+Receipt unfold animation works
+Member selection works
+Receipt UI loads correctly
+✅ Solution / Good Practice
+
+No major fix is required.
+
+Recommended good practices:
+
+Keep animation initialization inside initState()
+Avoid calling heavy UI updates before the first frame renders
+Dispose all animation controllers properly
+Use Future.delayed() carefully for startup animations
+
+Example already used in project:
+
+Future.delayed(const Duration(milliseconds: 300), () {
+  setState(() => showCircle = true);
+  _circleController.forward();
+});
+
+This helps sequence the UI safely.
+
+✨ Features Completed At This Stage
+🐰 Rabbit Circle System
+Rabbits spawn from center
+Rabbits form animated circle
+Each rabbit shows member name
+Users can tap rabbits to select split participants
+Disney-style glow selection effect added
+🧾 Receipt Interaction System
+Crumpled receipt ball shown first
+Receipt ball supports tilt + rotation effect
+Tap receipt ball to unfold receipt
+Receipt unfolds with animation
+📄 Receipt UI Features
+Real receipt paper texture
+Expense description field
+Amount field
+“Who Paid” dropdown
+Split among participant selection
+Upload receipt image placeholder
+Save Expense button
+✅ Good Practice Improvements
+Added separate animation controllers
+Added safe opacity animation handling
+Added reusable toggle member function
+Added proper controller disposal
+Maintained original app logic structure
+Added labelled comments for maintainability

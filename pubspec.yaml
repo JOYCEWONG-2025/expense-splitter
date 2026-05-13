@@ -38,6 +38,8 @@ flutter:
     - assets/backgrounds/Accomo.jpg
     - assets/backgrounds/trip.jpeg
     - assets/backgrounds/others.jpg
+    - assets/images/crumpled_ball.png
+    - assets/images/receipt.jpg
     - assets/lottie/
     - assets/icons/
     - assets/rabbits/Running rabbit.json
