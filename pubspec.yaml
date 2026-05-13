@@ -31,6 +31,14 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
+  # ==========================================
+  # 🎨 DISNEY / CINEMATIC HANDWRITING FONTS
+  # ==========================================
+  fonts:
+    - family: Caveat
+      fonts:
+        - asset: assets/fonts/Caveat-Regular.ttf
+
   assets:
     - assets/backgrounds/food.jpg
     - assets/backgrounds/transport.jpeg

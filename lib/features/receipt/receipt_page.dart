@@ -16,7 +16,7 @@ enum SceneState {
   receiptOpened,
 }
 
-// ✍️ STEP 3 — “INK WRITING ANIMATION”
+// ✍️ STEP 3 — “INK WRITING ANIMATION” (Enhanced with character-by-character reveal)
 class InkText extends StatefulWidget {
   final String text;
   final TextStyle? style;
@@ -37,7 +37,7 @@ class _InkTextState extends State<InkText>
 
     controller = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 800),
+      duration: const Duration(milliseconds: 1200), // Updated to matching requested millisecond pacing
     )..forward();
   }
 
@@ -54,13 +54,14 @@ class _InkTextState extends State<InkText>
     return AnimatedBuilder(
       animation: controller,
       builder: (context, _) {
+        // 🪶 OPTION A: “Ink typing reveal” character-by-character mapping calculation
         final len = (widget.text.length * controller.value).floor();
         return Text(
           widget.text.substring(0, len),
           style: widget.style ?? const TextStyle(
-            fontFamily: 'serif',
-            fontSize: 16,
-            color: Colors.black,
+            fontFamily: "Caveat", // ✨ Updated to use Caveat Handwriting font
+            fontSize: 22,         // ✨ Adjusted to match requested sizing footprint
+            color: Colors.black87,
           ),
         );
       },
@@ -83,9 +84,6 @@ class ReceiptPage extends StatefulWidget {
     required this.groupName,
     required this.members,
   });
-
-  @override
-  Widget build(BuildContext context) => Scaffold(body: Container()); // Placeholder to satisfy compilation structure requirement
 
   @override
   State<ReceiptPage> createState() => _ReceiptPageState();
@@ -282,7 +280,10 @@ class _ReceiptPageState extends State<ReceiptPage>
         return AlertDialog(
           backgroundColor: Colors.white,
           title: const Text("Edit"),
-          content: TextField(controller: temp),
+          content: TextField(
+            controller: temp,
+            style: const TextStyle(fontFamily: "Caveat", fontSize: 18),
+          ),
           actions: [
             TextButton(
               onPressed: () {
@@ -315,7 +316,7 @@ class _ReceiptPageState extends State<ReceiptPage>
               itemBuilder: (context, index) {
                 final member = widget.members[index];
                 return ListTile(
-                  title: Text(member),
+                  title: Text(member, style: const TextStyle(fontFamily: "Caveat", fontSize: 18)),
                   trailing: selectedPayer == member ? const Icon(Icons.check, color: Colors.black) : null,
                   onTap: () {
                     setState(() {
@@ -668,7 +669,6 @@ class _ReceiptPageState extends State<ReceiptPage>
             // ================================
             if (showReceipt)
               Transform.translate(
-                // ✅ DYNAMIC OFFSET MODIFICATION: Shifts receipt to center when members > 4
                 offset: widget.members.length <= 4 
                     ? const Offset(110, 0) 
                     : const Offset(0, 0),
@@ -717,7 +717,7 @@ class _ReceiptPageState extends State<ReceiptPage>
                               Positioned.fill(
                                 child: Image.asset(
                                   "assets/images/receipt.jpg",
-                                  fit: BoxFit.cover, // ✅ Reverted to earliest cover style parameters as requested
+                                  fit: BoxFit.cover,
                                 ),
                               ),
 
@@ -744,14 +744,19 @@ class _ReceiptPageState extends State<ReceiptPage>
                                         ),
                                       ),
                                       const SizedBox(height: 2),
-                                      InkText(
-                                        descriptionController.text.isEmpty
-                                            ? "Tap to add description"
-                                            : descriptionController.text,
-                                        style: const TextStyle(
-                                          fontFamily: 'cursive',
-                                          fontSize: 18,
-                                          color: Colors.black87,
+                                      // ✨ 6. “INK APPEARANCE” ANIMATION Layer via localized state injection
+                                      AnimatedOpacity(
+                                        duration: const Duration(milliseconds: 600),
+                                        opacity: showReceipt ? 1.0 : 0.0,
+                                        child: InkText(
+                                          descriptionController.text.isEmpty
+                                              ? "Tap to write..."
+                                              : descriptionController.text,
+                                          style: const TextStyle(
+                                            fontFamily: "Caveat",
+                                            fontSize: 22,
+                                            color: Colors.black87,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -782,15 +787,19 @@ class _ReceiptPageState extends State<ReceiptPage>
                                         ),
                                       ),
                                       const SizedBox(height: 2),
-                                      InkText(
-                                        amountController.text.isEmpty
-                                            ? "0.00"
-                                            : amountController.text,
-                                        style: const TextStyle(
-                                          fontFamily: 'cursive',
-                                          fontSize: 20,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black,
+                                      AnimatedOpacity(
+                                        duration: const Duration(milliseconds: 600),
+                                        opacity: showReceipt ? 1.0 : 0.0,
+                                        child: InkText(
+                                          amountController.text.isEmpty
+                                              ? "0.00"
+                                              : amountController.text,
+                                          style: const TextStyle(
+                                            fontFamily: "Caveat",
+                                            fontSize: 24,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black87,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -821,12 +830,16 @@ class _ReceiptPageState extends State<ReceiptPage>
                                         ),
                                       ),
                                       const SizedBox(height: 2),
-                                      InkText(
-                                        selectedPayer ?? "Who paid? ✎",
-                                        style: const TextStyle(
-                                          fontSize: 16,
-                                          color: Colors.black,
-                                          fontFamily: 'serif',
+                                      AnimatedOpacity(
+                                        duration: const Duration(milliseconds: 600),
+                                        opacity: showReceipt ? 1.0 : 0.0,
+                                        child: InkText(
+                                          selectedPayer ?? "Who paid? ✎",
+                                          style: const TextStyle(
+                                            fontFamily: "Caveat",
+                                            fontSize: 20,
+                                            color: Colors.black87,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -854,25 +867,29 @@ class _ReceiptPageState extends State<ReceiptPage>
                                         ),
                                       ),
                                     const SizedBox(height: 6),
-                                    Wrap(
-                                      spacing: 8,
-                                      runSpacing: 4,
-                                      children: widget.members.map((member) {
-                                        final isSelected = selectedMembers.contains(member);
-                                        return GestureDetector(
-                                          onTap: () => toggleMember(member),
-                                          child: Text(
-                                            isSelected ? "[✓] $member" : "[ ] $member",
-                                            style: TextStyle(
-                                              fontFamily: 'serif',
-                                              fontSize: 14,
-                                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-                                              color: isSelected ? Colors.black : Colors.black54,
-                                              decoration: isSelected ? TextDecoration.none : TextDecoration.lineThrough,
+                                    AnimatedOpacity(
+                                      duration: const Duration(milliseconds: 600),
+                                      opacity: showReceipt ? 1.0 : 0.0,
+                                      child: Wrap(
+                                        spacing: 8,
+                                        runSpacing: 4,
+                                        children: widget.members.map((member) {
+                                          final isSelected = selectedMembers.contains(member);
+                                          return GestureDetector(
+                                            onTap: () => toggleMember(member),
+                                            child: Text(
+                                              isSelected ? "[✓] $member" : "[ ] $member",
+                                              style: TextStyle(
+                                                fontFamily: "Caveat",
+                                                fontSize: 18,
+                                                fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                                color: isSelected ? Colors.black87 : Colors.black45,
+                                                decoration: isSelected ? TextDecoration.none : TextDecoration.lineThrough,
+                                              ),
                                             ),
-                                          ),
-                                        );
-                                      }).toList(),
+                                          );
+                                        }).toList(),
+                                      ),
                                     ),
                                   ],
                                 ),
@@ -882,7 +899,7 @@ class _ReceiptPageState extends State<ReceiptPage>
                               // 📸 STEP 4 — “Upload button disappears into paper”
                               // ======================
                               Positioned(
-                                bottom: 150, // Raised higher from 130 to 150
+                                bottom: 150, 
                                 left: 40,
                                 right: 40,
                                 child: Column(
@@ -891,15 +908,19 @@ class _ReceiptPageState extends State<ReceiptPage>
                                     GestureDetector(
                                       behavior: HitTestBehavior.opaque,
                                       onTap: pickImage,
-                                      child: InkText(
-                                        (kIsWeb ? webImageBlobPath == null : uploadedImage == null)
-                                            ? "Attach receipt ✎"
-                                            : "✓ receipt attached",
-                                        style: const TextStyle(
-                                          fontSize: 15,
-                                          fontFamily: 'serif',
-                                          color: Colors.black,
-                                          decoration: TextDecoration.underline,
+                                      child: AnimatedOpacity(
+                                        duration: const Duration(milliseconds: 600),
+                                        opacity: showReceipt ? 1.0 : 0.0,
+                                        child: InkText(
+                                          (kIsWeb ? webImageBlobPath == null : uploadedImage == null)
+                                              ? "Attach receipt ✎"
+                                              : "✓ receipt attached",
+                                          style: const TextStyle(
+                                            fontFamily: "Caveat",
+                                            fontSize: 18,
+                                            color: Colors.black87,
+                                            decoration: TextDecoration.underline,
+                                          ),
                                         ),
                                       ),
                                     ),
@@ -914,11 +935,11 @@ class _ReceiptPageState extends State<ReceiptPage>
                                           image: kIsWeb
                                               ? DecorationImage(
                                                   image: NetworkImage(webImageBlobPath!), 
-                                                  fit: BoxFit.cover, // Reverted to cover parameter limits
+                                                  fit: BoxFit.cover,
                                                 )
                                               : DecorationImage(
                                                   image: FileImage(uploadedImage!), 
-                                                  fit: BoxFit.cover, // Reverted to cover parameter limits
+                                                  fit: BoxFit.cover,
                                                 ),
                                         ),
                                       )
@@ -940,13 +961,17 @@ class _ReceiptPageState extends State<ReceiptPage>
                                       const SnackBar(content: Text("Expense Saved ✨")),
                                     );
                                   },
-                                  child: const Text(
-                                    "Save →",
-                                    style: TextStyle(
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      fontFamily: 'serif',
-                                      color: Colors.black,
+                                  child: AnimatedOpacity(
+                                    duration: const Duration(milliseconds: 600),
+                                    opacity: showReceipt ? 1.0 : 0.0,
+                                    child: const Text(
+                                      "Save →",
+                                      style: TextStyle(
+                                        fontSize: 22,
+                                        fontWeight: FontWeight.bold,
+                                        fontFamily: "Caveat",
+                                        color: Colors.black87,
+                                      ),
                                     ),
                                   ),
                                 ),
