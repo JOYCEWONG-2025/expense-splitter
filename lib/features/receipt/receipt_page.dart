@@ -335,12 +335,18 @@ class _ReceiptPageState extends State<ReceiptPage>
                       else if (sceneState == SceneState.semicircleFormed ||
                           sceneState == SceneState.receiptReady ||
                           showReceipt) {
-                        final radius = widget.members.length <= 4
-                            ? 320.0
-                            : 360.0;
+                        // ================================
+                        // 🟣 LEFT-SIDE SEMICIRCLE
+                        // Rabbits face receipt naturally
+                        // ================================
 
-                        final startAngle = pi + 0.6;
-                        final endAngle = 2 * pi - 0.6;
+                        final radius = widget.members.length <= 4
+                            ? 260.0
+                            : 300.0;
+
+                        // LEFT SIDE ARC
+                        final startAngle = pi * 0.7;
+                        final endAngle = pi * 1.3;
 
                         final angleStep =
                             (endAngle - startAngle) /
@@ -348,9 +354,12 @@ class _ReceiptPageState extends State<ReceiptPage>
 
                         final angle = startAngle + (i * angleStep);
 
+                        // Move whole arc LEFT
+                        final arcCenter = const Offset(-170, 0);
+
                         base = Offset(
-                          radius * cos(angle),
-                          radius * sin(angle) + 35,
+                          arcCenter.dx + radius * cos(angle),
+                          arcCenter.dy + radius * sin(angle),
                         );
                       }
 
@@ -397,12 +406,13 @@ class _ReceiptPageState extends State<ReceiptPage>
                                   child: AnimatedScale(
                                     duration: const Duration(milliseconds: 250),
 
-                                    scale:
-                                        selectedMembers.contains(
-                                          widget.members[i],
-                                        )
-                                        ? 1.15
-                                        : 1.0,
+                                    scale: showReceipt
+                                        ? 0.88
+                                        : (selectedMembers.contains(
+                                                widget.members[i],
+                                              )
+                                              ? 1.15
+                                              : 1.0),
 
                                     child: Lottie.asset(
                                       "assets/rabbits/Rabbit Kick Scooter.json",
@@ -503,7 +513,7 @@ class _ReceiptPageState extends State<ReceiptPage>
             // ================================
             if (showReceipt)
               Transform.translate(
-                offset: Offset.zero,
+                offset: const Offset(110, 0),
                 child: ScaleTransition(
                   scale: animation,
 
