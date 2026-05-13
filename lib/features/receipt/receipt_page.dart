@@ -3,6 +3,15 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:ui';
 
+enum SceneState {
+  idleCircle,
+  leaderApproaching,
+  groupArriving,
+  semicircleFormed,
+  receiptReady,
+  receiptOpened,
+}
+
 class ReceiptPage extends StatefulWidget {
   final String groupName;
   final List<String> members;
@@ -34,6 +43,9 @@ class _ReceiptPageState extends State<ReceiptPage>
   // 🐰 RABBIT CIRCLE ANIMATION
   late AnimationController _circleController;
 
+  // RABBIT APPROACH RECEIPT
+  late AnimationController _approachController;
+
   // ================================
   // 🧾 ADD: RECEIPT UNFOLD ANIMATION
   // ================================
@@ -57,6 +69,20 @@ class _ReceiptPageState extends State<ReceiptPage>
   // ================================
   bool showCircle = false;
   bool showReceipt = false;
+
+  // ================================
+  // 🎮 SCENE STATE CONTROLLER (NEW)
+  // ================================
+  SceneState sceneState = SceneState.idleCircle;
+
+  // 🧠 animation progress (0 → 1)
+  double approachProgress = 0.0;
+
+  // 🐰 leader rabbit index
+  int leaderIndex = 0;
+
+  // 📍 receipt target position (center)
+  final Offset receiptPosition = Offset(0, 0);
 
   @override
   void initState() {
@@ -127,6 +153,27 @@ class _ReceiptPageState extends State<ReceiptPage>
       setState(() => showCircle = true);
       _circleController.forward();
     });
+
+    // ================================
+    // 🐰 APPROACH ANIMATION CONTROLLER
+    // ================================
+    _approachController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1200),
+    );
+
+    _approachController.addListener(() {
+      setState(() {
+        approachProgress = _approachController.value;
+      });
+    });
+
+    // 🐰 START APPROACH FLOW (NEW)
+    Future.delayed(const Duration(milliseconds: 800), () {
+      if (mounted) {
+        _approachController.forward();
+      }
+    });
   }
 
   @override
@@ -137,6 +184,9 @@ class _ReceiptPageState extends State<ReceiptPage>
     // 🧾 ADD
     _unfoldController.dispose();
     _floatingController.dispose();
+
+    // ✅ ADD THIS
+    _approachController.dispose();
 
     super.dispose();
   }
@@ -151,10 +201,18 @@ class _ReceiptPageState extends State<ReceiptPage>
 
     final angle = (2 * pi * index) / total;
 
-    return Offset(
+    final circleOffset = Offset(
       radius * _circleController.value * cos(angle),
       radius * _circleController.value * sin(angle),
     );
+
+    // 🐰 APPROACH OFFSET (move toward center ball)
+    final approachOffset = Offset(
+      circleOffset.dx * (1 - approachProgress),
+      circleOffset.dy * (1 - approachProgress),
+    );
+
+    return approachOffset;
   }
 
   // ================================
@@ -179,6 +237,35 @@ class _ReceiptPageState extends State<ReceiptPage>
       } else {
         selectedMembers.add(member);
       }
+    });
+  }
+
+  // ================================
+  // 🎬 SCENE FLOW CONTROLLER (NEW)
+  // ================================
+  void startSceneFlow() async {
+    setState(() {
+      sceneState = SceneState.leaderApproaching;
+    });
+
+    _approachController.forward(from: 0);
+
+    await Future.delayed(const Duration(milliseconds: 700));
+
+    setState(() {
+      sceneState = SceneState.groupArriving;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 1200));
+
+    setState(() {
+      sceneState = SceneState.semicircleFormed;
+    });
+
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    setState(() {
+      sceneState = SceneState.receiptReady;
     });
   }
 
@@ -214,11 +301,49 @@ class _ReceiptPageState extends State<ReceiptPage>
                         _unfoldController.value,
                       )!;
 
-                      final pos = getPosition(
+                      Offset base = getPosition(
                         i,
                         widget.members.length,
                         animatedRadius,
                       );
+
+                      // ================================
+                      // 🟡 STEP 1: leader approaches receipt
+                      // ================================
+                      if (sceneState == SceneState.leaderApproaching) {
+                        if (i == leaderIndex) {
+                          base = Offset.lerp(
+                            base,
+                            receiptPosition,
+                            approachProgress,
+                          )!;
+                        }
+                      }
+
+                      // ================================
+                      // 🟠 STEP 2: group follows wave
+                      // ================================
+                      if (sceneState == SceneState.groupArriving) {
+                        final delay = i * 0.08;
+                        final t = (approachProgress - delay).clamp(0.0, 1.0);
+                        base = Offset.lerp(base, receiptPosition, t)!;
+                      }
+
+                      // ================================
+                      // 🟣 STEP 3: semicircle formation
+                      // ================================
+                      if (sceneState == SceneState.semicircleFormed) {
+                        final radius = 170.0;
+                        final angleStep = pi / (widget.members.length - 1);
+                        final angle = -pi / 2 + (i * angleStep);
+
+                        base = Offset(
+                          receiptPosition.dx + radius * cos(angle),
+                          receiptPosition.dy + radius * sin(angle),
+                        );
+                      }
+
+                      final pos = base;
                       return Transform.translate(
                         offset: pos,
 
@@ -313,72 +438,53 @@ class _ReceiptPageState extends State<ReceiptPage>
               ),
 
             // ================================
-            // 🧾 FLOATING MAGIC CRUMPLED RECEIPT BALL
+            // 🧾 FLOATING MAGIC CRUMPLED RECEIPT BALL (CENTER FIXED)
             // ================================
             if (showCircle && !showReceipt)
-              AnimatedBuilder(
-                animation: _floatingController,
-
-                builder: (context, child) {
-                  return Transform.translate(
-                    offset: Offset(95, _floatingMove.value),
-
-                    child: Transform.rotate(
-                      angle: _floatingRotate.value,
-
-                      child: Transform.scale(
-                        scale: _floatingScale.value,
-
-                        child: GestureDetector(
-                          onTap: openReceipt,
-
-                          child: Stack(
-                            alignment: Alignment.center,
-
-                            children: [
-                              // 🧾 CRUMPLED BALL
-                              Image.asset(
-                                "assets/images/crumpled_ball.png",
-                                width: 165,
-                                height: 165,
-                                fit: BoxFit.contain,
-                              ),
-
-                              // ✨ TAP ME GLOW ICON
-                              Opacity(
-                                opacity: _iconGlow.value,
-
-                                child: Container(
-                                  width: 52,
-                                  height: 52,
-
-                                  decoration: BoxDecoration(
-                                    color: Colors.white,
-
-                                    shape: BoxShape.circle,
-
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: Colors.amber.withOpacity(0.7),
-                                        blurRadius: 18,
-                                        spreadRadius: 3,
-                                      ),
-                                    ],
+              Positioned(
+                bottom: 40,
+                left: 0,
+                right: 0,
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: GestureDetector(
+                    behavior: HitTestBehavior.opaque,
+                    onTap: sceneState == SceneState.receiptReady
+                        ? openReceipt
+                        : startSceneFlow,
+                    child: AnimatedBuilder(
+                      animation: _floatingController,
+                      builder: (context, child) {
+                        return Transform.translate(
+                          offset: Offset(0, _floatingMove.value),
+                          child: Transform.rotate(
+                            angle: _floatingRotate.value,
+                            child: Transform.scale(
+                              scale: _floatingScale.value,
+                              child: Stack(
+                                alignment: Alignment.center,
+                                children: [
+                                  Image.asset(
+                                    "assets/images/crumpled_ball.png",
+                                    width: 165,
+                                    height: 165,
                                   ),
-
-                                  child: const Icon(
-                                    Icons.touch_app_rounded,
-                                    size: 28,
+                                  Opacity(
+                                    opacity: _iconGlow.value,
+                                    child: const Icon(
+                                      Icons.touch_app,
+                                      size: 40,
+                                    ),
                                   ),
-                                ),
+                                ],
                               ),
-                            ],
+                            ),
                           ),
-                        ),
-                      ),
+                        );
+                      },
                     ),
-                  );
-                },
+                  ),
+                ),
               ),
 
             // ================================
@@ -561,6 +667,7 @@ class _ReceiptPageState extends State<ReceiptPage>
 
                                   return GestureDetector(
                                     onTap: () => toggleMember(member),
+                                    behavior: HitTestBehavior.opaque,
 
                                     child: AnimatedContainer(
                                       duration: const Duration(
