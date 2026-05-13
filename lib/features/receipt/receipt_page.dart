@@ -2,6 +2,10 @@ import 'dart:math';
 import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'dart:ui';
+import 'package:image_picker/image_picker.dart';
+import 'dart:io';
+// ✅ ADD FOUNDATION IMPORT TO DETECT WEB RUNTIME Safely
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 enum SceneState {
   idleCircle,
@@ -10,6 +14,64 @@ enum SceneState {
   semicircleFormed,
   receiptReady,
   receiptOpened,
+}
+
+// ✍️ STEP 3 — “INK WRITING ANIMATION”
+class InkText extends StatefulWidget {
+  final String text;
+  final TextStyle? style;
+
+  const InkText(this.text, {super.key, this.style});
+
+  @override
+  State<InkText> createState() => _InkTextState();
+}
+
+class _InkTextState extends State<InkText>
+    with SingleTickerProviderStateMixin {
+  late AnimationController controller;
+
+  @override
+  void initState() {
+    super.initState();
+
+    controller = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 800),
+    )..forward();
+  }
+
+  @override
+  void didUpdateWidget(covariant InkText oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.text != widget.text) {
+      controller.forward(from: 0.0);
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return AnimatedBuilder(
+      animation: controller,
+      builder: (context, _) {
+        final len = (widget.text.length * controller.value).floor();
+        return Text(
+          widget.text.substring(0, len),
+          style: widget.style ?? const TextStyle(
+            fontFamily: 'serif',
+            fontSize: 16,
+            color: Colors.black,
+          ),
+        );
+      },
+    );
+  }
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
 }
 
 class ReceiptPage extends StatefulWidget {
@@ -63,6 +125,12 @@ class _ReceiptPageState extends State<ReceiptPage>
   late Animation<double> _floatingScale;
   late Animation<double> _floatingMove;
   late Animation<double> _iconGlow;
+
+  // Step 3: add variable
+  File? uploadedImage;
+  // ✅ ADD A STRING REFERENCE FOR WEB BLOB PATH RETENTION
+  String? webImageBlobPath;
+  final picker = ImagePicker();
 
   // ================================
   // 🧠 FLOW CONTROL
@@ -156,12 +224,6 @@ class _ReceiptPageState extends State<ReceiptPage>
       duration: const Duration(milliseconds: 1200),
     );
 
-    _approachController.addListener(() {
-      setState(() {
-        approachProgress = _approachController.value;
-      });
-    });
-
     // 🐰 START RABBITS FIRST
     Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
@@ -186,7 +248,85 @@ class _ReceiptPageState extends State<ReceiptPage>
     // ✅ ADD THIS
     _approachController.dispose();
 
+    descriptionController.dispose();
+    amountController.dispose();
     super.dispose();
+  }
+
+  // Step 4: function
+  Future<void> pickImage() async {
+    final picked = await picker.pickImage(source: ImageSource.gallery);
+
+    if (picked != null) {
+      setState(() {
+        // ✅ On Web, picked.path contains the blob address needed for display
+        if (kIsWeb) {
+          webImageBlobPath = picked.path;
+        } else {
+          uploadedImage = File(picked.path);
+        }
+      });
+    }
+  }
+
+  // ✏️ STEP 2 — Add simple edit function
+  void _edit(TextEditingController controller) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        final temp = TextEditingController(text: controller.text);
+
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text("Edit"),
+          content: TextField(controller: temp),
+          actions: [
+            TextButton(
+              onPressed: () {
+                setState(() {
+                  controller.text = temp.text;
+                });
+                Navigator.pop(context);
+              },
+              child: const Text("Done"),
+            )
+          ],
+        );
+      },
+    );
+  }
+
+  // Helper dialog specifically processing selection assignment lists
+  void _showPayerSelectionDialog() {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          title: const Text("Select Payer"),
+          content: SizedBox(
+            width: double.maxFinite,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: widget.members.length,
+              itemBuilder: (context, index) {
+                final member = widget.members[index];
+                return ListTile(
+                  title: Text(member),
+                  trailing: selectedPayer == member ? const Icon(Icons.check, color: Colors.black) : null,
+                  onTap: () {
+                    setState(() {
+                      selectedPayer = member;
+                    });
+                    Navigator.pop(context);
+                  },
+                );
+              },
+            ),
+          ),
+        );
+      },
+    );
   }
 
   // ================================
@@ -279,202 +419,172 @@ class _ReceiptPageState extends State<ReceiptPage>
             // 🐰 RABBITS FORMING CIRCLE
             // ================================
             if (showCircle)
-              AnimatedBuilder(
-                animation: _circleController,
-                builder: (context, child) {
-                  return Stack(
-                    alignment: Alignment.center,
+              RepaintBoundary(
+                child: AnimatedBuilder(
+                  animation: Listenable.merge([_circleController, _approachController, _unfoldController]),
+                  builder: (context, child) {
+                    approachProgress = _approachController.value;
+                    return Stack(
+                      alignment: Alignment.center,
+                      children: List.generate(widget.members.length, (i) {
+                        final animatedRadius = lerpDouble(
+                          155,
+                          widget.members.length <= 4 ? 420 : 360,
+                          _unfoldController.value,
+                        )!;
 
-                    children: List.generate(widget.members.length, (i) {
-                      final animatedRadius = lerpDouble(
-                        155,
-                        widget.members.length <= 4 ? 420 : 360,
-                        _unfoldController.value,
-                      )!;
-
-                      Offset base = getPosition(
-                        i,
-                        widget.members.length,
-                        animatedRadius,
-                      );
-
-                      // ================================
-                      // 🟡 STEP 1 — ONLY LEADER MOVES
-                      // ================================
-                      if (sceneState == SceneState.leaderApproaching) {
-                        if (i == leaderIndex) {
-                          base = Offset.lerp(
-                            base,
-                            const Offset(0, 40),
-                            approachProgress,
-                          )!;
-                        }
-                      }
-                      // ================================
-                      // 🟠 STEP 2 — OTHER RABBITS FOLLOW
-                      // ================================
-                      else if (sceneState == SceneState.groupArriving) {
-                        if (i == leaderIndex) {
-                          base = const Offset(0, 40);
-                        } else {
-                          final delay = (i - 1) * 0.12;
-
-                          final t = ((approachProgress - delay) / (1 - delay))
-                              .clamp(0.0, 1.0);
-
-                          base = Offset.lerp(
-                            base,
-                            Offset(base.dx * 0.45, base.dy * 0.45),
-                            t,
-                          )!;
-                        }
-                      }
-                      // ================================
-                      // 🟣 STEP 3 — FORM SEMICIRCLE
-                      // ================================
-                      else if (sceneState == SceneState.semicircleFormed ||
-                          sceneState == SceneState.receiptReady ||
-                          showReceipt) {
-                        // ================================
-                        // 🟣 LEFT-SIDE SEMICIRCLE
-                        // Rabbits face receipt naturally
-                        // ================================
-
-                        final radius = widget.members.length <= 4
-                            ? 260.0
-                            : 300.0;
-
-                        // LEFT SIDE ARC
-                        final startAngle = pi * 0.7;
-                        final endAngle = pi * 1.3;
-
-                        final angleStep =
-                            (endAngle - startAngle) /
-                            (widget.members.length - 1);
-
-                        final angle = startAngle + (i * angleStep);
-
-                        // Move whole arc LEFT
-                        final arcCenter = const Offset(-170, 0);
-
-                        base = Offset(
-                          arcCenter.dx + radius * cos(angle),
-                          arcCenter.dy + radius * sin(angle),
+                        Offset base = getPosition(
+                          i,
+                          widget.members.length,
+                          animatedRadius,
                         );
-                      }
 
-                      final pos = base;
-                      return Transform.translate(
-                        offset: pos,
+                        // ================================
+                        // 🟡 STEP 1 — ONLY LEADER MOVES
+                        // ================================
+                        if (sceneState == SceneState.leaderApproaching) {
+                          if (i == leaderIndex) {
+                            base = Offset.lerp(
+                              base,
+                              const Offset(0, 40),
+                              approachProgress,
+                            )!;
+                          }
+                        }
+                        // ================================
+                        // 🟠 STEP 2 — OTHER RABBITS FOLLOW
+                        // ================================
+                        else if (sceneState == SceneState.groupArriving) {
+                          if (i == leaderIndex) {
+                            base = const Offset(0, 40);
+                          } else {
+                            final delay = (i - 1) * 0.12;
 
-                        child: Transform.rotate(
-                          angle: atan2(-pos.dy, -pos.dx) * 0.12,
+                            final t = ((approachProgress - delay) / (1 - delay))
+                                .clamp(0.0, 1.0);
 
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              // ================================
-                              // 🐰 ANIMATED RABBIT
-                              // ================================
-                              GestureDetector(
-                                onTap: () => toggleMember(widget.members[i]),
+                            base = Offset.lerp(
+                              base,
+                              Offset(base.dx * 0.45, base.dy * 0.45),
+                              t,
+                            )!;
+                          }
+                        }
+                        // ================================
+                        // 🟣 STEP 3 — FORM SEMICIRCLE
+                        // ================================
+                        else if (sceneState == SceneState.semicircleFormed ||
+                            sceneState == SceneState.receiptReady ||
+                            showReceipt) {
+                          // ================================
+                          // 🟣 LEFT-SIDE SEMICIRCLE
+                          // Rabbits face receipt naturally
+                          // ================================
 
-                                child: AnimatedContainer(
-                                  duration: const Duration(milliseconds: 250),
+                          final radius = widget.members.length <= 4
+                              ? 260.0
+                              : 300.0;
 
-                                  padding: const EdgeInsets.all(6),
+                          // LEFT SIDE ARC
+                          final startAngle = pi * 0.7;
+                          final endAngle = pi * 1.3;
 
-                                  decoration: BoxDecoration(
-                                    shape: BoxShape.circle,
+                          final angleStep =
+                              (endAngle - startAngle) /
+                              (widget.members.length - 1);
 
-                                    boxShadow:
-                                        selectedMembers.contains(
-                                          widget.members[i],
-                                        )
-                                        ? [
-                                            BoxShadow(
-                                              color: Colors.amber.withOpacity(
-                                                0.7,
-                                              ),
-                                              blurRadius: 25,
-                                              spreadRadius: 4,
-                                            ),
-                                          ]
-                                        : [],
-                                  ),
+                          final angle = startAngle + (i * angleStep);
 
-                                  child: AnimatedScale(
+                          // Move whole arc LEFT
+                          final arcCenter = const Offset(-170, 0);
+
+                          base = Offset(
+                            arcCenter.dx + radius * cos(angle),
+                            arcCenter.dy + radius * sin(angle),
+                          );
+                        }
+
+                        final pos = base;
+                        return Transform.translate(
+                          offset: pos,
+                          child: Transform.rotate(
+                            angle: atan2(-pos.dy, -pos.dx) * 0.12,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                // ================================
+                                // 🐰 ANIMATED RABBIT
+                                // ================================
+                                GestureDetector(
+                                  onTap: () => toggleMember(widget.members[i]),
+                                  child: AnimatedContainer(
                                     duration: const Duration(milliseconds: 250),
-
-                                    scale: showReceipt
-                                        ? 0.88
-                                        : (selectedMembers.contains(
-                                                widget.members[i],
-                                              )
-                                              ? 1.15
-                                              : 1.0),
-
-                                    child: Lottie.asset(
-                                      "assets/rabbits/Rabbit Kick Scooter.json",
-                                      width: 145,
-                                      height: 145,
+                                    padding: const EdgeInsets.all(6),
+                                    decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      boxShadow:
+                                          selectedMembers.contains(
+                                            widget.members[i],
+                                          )
+                                          ? [
+                                              BoxShadow(
+                                                color: Colors.amber.withOpacity(
+                                                  0.7,
+                                                ),
+                                                blurRadius: 25,
+                                                spreadRadius: 4,
+                                              ),
+                                            ]
+                                          : [],
+                                    ),
+                                    child: AnimatedScale(
+                                      duration: const Duration(milliseconds: 250),
+                                      scale: showReceipt
+                                          ? 0.88
+                                          : (selectedMembers.contains(
+                                                  widget.members[i],
+                                                )
+                                                ? 1.15
+                                                : 1.0),
+                                      child: Lottie.asset(
+                                        "assets/rabbits/Rabbit Kick Scooter.json",
+                                        width: 145,
+                                        height: 145,
+                                      ),
                                     ),
                                   ),
                                 ),
-                              ),
 
-                              const SizedBox(height: 4),
+                                const SizedBox(height: 4),
 
-                              // ================================
-                              // 🏷️ MEMBER NAME LABEL (SMART POSITION)
-                              // ================================
-                              Transform.translate(
-                                offset: showReceipt
-                                    ? Offset(
-                                        // move label slightly outward so it goes into empty space
-                                        pos.dx * 0.15,
-                                        pos.dy * 0.15,
-                                      )
-                                    : const Offset(0, 0),
-
-                                child: Container(
-                                  margin: const EdgeInsets.only(top: 6),
-
+                                // ================================
+                                // 🏷️ MEMBER NAME LABEL
+                                // ================================
+                                Container(
                                   padding: const EdgeInsets.symmetric(
                                     horizontal: 10,
                                     vertical: 4,
                                   ),
-
                                   decoration: BoxDecoration(
                                     color: Colors.white.withOpacity(0.9),
                                     borderRadius: BorderRadius.circular(10),
-                                    boxShadow: showReceipt
-                                        ? [
-                                            const BoxShadow(
-                                              blurRadius: 8,
-                                              color: Colors.black12,
-                                            ),
-                                          ]
-                                        : [],
                                   ),
-
                                   child: Text(
                                     widget.members[i],
-
                                     style: const TextStyle(
                                       fontWeight: FontWeight.w600,
                                       fontSize: 13,
                                     ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                      );
-                    }),
-                  );
-                },
+                        );
+                      }),
+                    );
+                  },
+                ),
               ),
 
             // ================================
@@ -535,41 +645,28 @@ class _ReceiptPageState extends State<ReceiptPage>
                 offset: const Offset(110, 0),
                 child: ScaleTransition(
                   scale: animation,
-
                   child: AnimatedBuilder(
                     animation: _unfoldController,
-
                     builder: (context, child) {
                       return Opacity(
                         opacity: _fadeAnim.value.clamp(0.0, 1.0),
-
                         child: Transform(
                           alignment: Alignment.center,
-
                           transform: Matrix4.identity()
                             ..rotateZ(_rotateAnim.value)
                             ..scale(_scaleAnim.value)
                             ..translate(0.0, 10.0 * (1 - _fadeAnim.value)),
-
                           child: child,
                         ),
                       );
                     },
-
+                    // ✅ FINAL STRUCTURE (what you should build) - Strict Stack Architecture
                     child: Container(
                       width: 330,
                       height: 620,
-
                       margin: const EdgeInsets.all(18),
-
                       decoration: BoxDecoration(
-                        image: const DecorationImage(
-                          image: AssetImage("assets/images/receipt.jpg"),
-                          fit: BoxFit.cover,
-                        ),
-
                         borderRadius: BorderRadius.circular(24),
-
                         boxShadow: const [
                           BoxShadow(
                             blurRadius: 25,
@@ -578,242 +675,245 @@ class _ReceiptPageState extends State<ReceiptPage>
                           ),
                         ],
                       ),
-
-                      child: Padding(
-                        padding: const EdgeInsets.fromLTRB(28, 34, 28, 28),
-
-                        child: SingleChildScrollView(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-
+                      child: ClipRRect(
+                        borderRadius: BorderRadius.circular(24),
+                        child: SizedBox(
+                          width: 330,
+                          height: 620,
+                          child: Stack(
                             children: [
-                              // ================================
-                              // 🧾 DESCRIPTION
-                              // ================================
-                              const Text(
-                                "Expense Description",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              TextField(
-                                controller: descriptionController,
-
-                                decoration: InputDecoration(
-                                  hintText: "Example: Korean BBQ 🍖",
-
-                                  filled: true,
-                                  fillColor: Colors.white.withOpacity(0.75),
-
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(18),
-
-                                    borderSide: BorderSide.none,
-                                  ),
+                              // ======================
+                              // 🧾 BACKGROUND IMAGE ONLY
+                              // ======================
+                              Positioned.fill(
+                                child: Image.asset(
+                                  "assets/images/receipt.jpg",
+                                  fit: BoxFit.cover,
                                 ),
                               ),
 
-                              const SizedBox(height: 24),
-
-                              // ================================
-                              // 💰 AMOUNT
-                              // ================================
-                              const Text(
-                                "Amount",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              TextField(
-                                controller: amountController,
-                                keyboardType: TextInputType.number,
-
-                                decoration: InputDecoration(
-                                  hintText: "0.00",
-
-                                  filled: true,
-                                  fillColor: Colors.white.withOpacity(0.75),
-
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(18),
-
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 24),
-
-                              // ================================
-                              // 👤 WHO PAID
-                              // ================================
-                              const Text(
-                                "Who Paid?",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-
-                              const SizedBox(height: 10),
-
-                              DropdownButtonFormField<String>(
-                                value: selectedPayer,
-
-                                items: widget.members.map((member) {
-                                  return DropdownMenuItem(
-                                    value: member,
-                                    child: Text(member),
-                                  );
-                                }).toList(),
-
-                                onChanged: (value) {
-                                  setState(() {
-                                    selectedPayer = value;
-                                  });
-                                },
-
-                                decoration: InputDecoration(
-                                  filled: true,
-                                  fillColor: Colors.white.withOpacity(0.75),
-
-                                  border: OutlineInputBorder(
-                                    borderRadius: BorderRadius.circular(18),
-
-                                    borderSide: BorderSide.none,
-                                  ),
-                                ),
-                              ),
-
-                              const SizedBox(height: 24),
-
-                              // ================================
-                              // 🐰 SPLIT AMONG
-                              // ================================
-                              const Text(
-                                "Split Among",
-                                style: TextStyle(fontWeight: FontWeight.bold),
-                              ),
-
-                              const SizedBox(height: 14),
-
-                              Wrap(
-                                spacing: 12,
-                                runSpacing: 12,
-
-                                children: widget.members.map((member) {
-                                  final isSelected = selectedMembers.contains(
-                                    member,
-                                  );
-
-                                  return GestureDetector(
-                                    onTap: () => toggleMember(member),
-                                    behavior: HitTestBehavior.opaque,
-
-                                    child: AnimatedContainer(
-                                      duration: const Duration(
-                                        milliseconds: 250,
-                                      ),
-
-                                      padding: const EdgeInsets.symmetric(
-                                        horizontal: 18,
-                                        vertical: 14,
-                                      ),
-
-                                      decoration: BoxDecoration(
-                                        color: isSelected
-                                            ? Colors.black
-                                            : Colors.white,
-
-                                        borderRadius: BorderRadius.circular(20),
-
-                                        border: Border.all(
-                                          color: isSelected
-                                              ? Colors.black
-                                              : Colors.grey.shade300,
-                                        ),
-
-                                        boxShadow: isSelected
-                                            ? [
-                                                const BoxShadow(
-                                                  blurRadius: 10,
-                                                  color: Colors.black26,
-                                                ),
-                                              ]
-                                            : [],
-                                      ),
-
-                                      child: Text(
-                                        "🐰 $member",
-
+                              // ======================
+                              // ✏️ DESCRIPTION (TOP AREA)
+                              // ======================
+                              Positioned(
+                                top: 120,
+                                left: 40,
+                                right: 40,
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () => _edit(descriptionController),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Item Label:",
                                         style: TextStyle(
-                                          color: isSelected
-                                              ? Colors.white
-                                              : Colors.black,
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black.withOpacity(0.4),
+                                          fontFamily: 'serif',
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      InkText(
+                                        descriptionController.text.isEmpty
+                                            ? "Tap to add description"
+                                            : descriptionController.text,
+                                        style: const TextStyle(
+                                          fontFamily: 'cursive',
+                                          fontSize: 18,
+                                          color: Colors.black87,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
 
-                                          fontWeight: FontWeight.w600,
+                              // ======================
+                              // 💰 AMOUNT (MIDDLE AREA)
+                              // ======================
+                              Positioned(
+                                top: 200,
+                                left: 40,
+                                right: 40,
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () => _edit(amountController),
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Total Due:",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black.withOpacity(0.4),
+                                          fontFamily: 'serif',
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      InkText(
+                                        amountController.text.isEmpty
+                                            ? "0.00"
+                                            : amountController.text,
+                                        style: const TextStyle(
+                                          fontFamily: 'cursive',
+                                          fontSize: 20,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              // ======================
+                              // 🧾 STEP 2 — TURN EVERYTHING INTO “INK TEXT” - WHO PAID
+                              // ======================
+                              Positioned(
+                                top: 280,
+                                left: 40,
+                                right: 40,
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: _showPayerSelectionDialog,
+                                  child: Column(
+                                    crossAxisAlignment: CrossAxisAlignment.start,
+                                    children: [
+                                      Text(
+                                        "Settled By:",
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.black.withOpacity(0.4),
+                                          fontFamily: 'serif',
+                                        ),
+                                      ),
+                                      const SizedBox(height: 2),
+                                      InkText(
+                                        selectedPayer ?? "Who paid? ✎",
+                                        style: const TextStyle(
+                                          fontSize: 16,
+                                          color: Colors.black,
+                                          fontFamily: 'serif',
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              // ======================
+                              // 👥 SPLIT MEMBERS INK LAYER
+                              // ======================
+                              Positioned(
+                                top: 360,
+                                left: 40,
+                                right: 40,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Text(
+                                      "Split Contribution Workspace:",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.black.withOpacity(0.4),
+                                        fontFamily: 'serif',
+                                      ),
+                                    ),
+                                    const SizedBox(height: 6),
+                                    Wrap(
+                                      spacing: 8,
+                                      runSpacing: 4,
+                                      children: widget.members.map((member) {
+                                        final isSelected = selectedMembers.contains(member);
+                                        return GestureDetector(
+                                          onTap: () => toggleMember(member),
+                                          child: Text(
+                                            isSelected ? "[✓] $member" : "[ ] $member",
+                                            style: TextStyle(
+                                              fontFamily: 'serif',
+                                              fontSize: 14,
+                                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                                              color: isSelected ? Colors.black : Colors.black54,
+                                              decoration: isSelected ? TextDecoration.none : TextDecoration.lineThrough,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                    ),
+                                  ],
+                                ),
+                              ),
+
+                              // ======================
+                              // 📸 STEP 4 — “Upload button disappears into paper”
+                              // ======================
+                              Positioned(
+                                bottom: 150, // Modified: Raised higher from 130 to 150
+                                left: 40,
+                                right: 40,
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: pickImage,
+                                      child: InkText(
+                                        (kIsWeb ? webImageBlobPath == null : uploadedImage == null)
+                                            ? "Attach receipt ✎"
+                                            : "✓ receipt attached",
+                                        style: const TextStyle(
+                                          fontSize: 15,
+                                          fontFamily: 'serif',
+                                          color: Colors.black,
+                                          decoration: TextDecoration.underline,
                                         ),
                                       ),
                                     ),
-                                  );
-                                }).toList(),
-                              ),
-
-                              const SizedBox(height: 28),
-
-                              // ================================
-                              // 📸 UPLOAD RECEIPT IMAGE
-                              // ================================
-                              Container(
-                                height: 150,
-                                width: double.infinity,
-
-                                decoration: BoxDecoration(
-                                  color: Colors.white.withOpacity(0.75),
-
-                                  borderRadius: BorderRadius.circular(22),
-
-                                  border: Border.all(
-                                    color: Colors.grey.shade300,
-                                  ),
-                                ),
-
-                                child: const Center(
-                                  child: Text("📸 Upload Receipt Image"),
+                                    // Subtle background layout reference displayer
+                                    if (kIsWeb ? webImageBlobPath != null : uploadedImage != null) ...[
+                                      const SizedBox(height: 6),
+                                      Container(
+                                        height: 40,
+                                        width: 100,
+                                        decoration: BoxDecoration(
+                                          borderRadius: BorderRadius.circular(6),
+                                          image: kIsWeb
+                                              ? DecorationImage(image: NetworkImage(webImageBlobPath!), fit: BoxFit.cover)
+                                              : DecorationImage(image: FileImage(uploadedImage!), fit: BoxFit.cover),
+                                        ),
+                                      )
+                                    ]
+                                  ],
                                 ),
                               ),
 
-                              const SizedBox(height: 34),
-
-                              // ================================
-                              // 💾 SAVE BUTTON
-                              // ================================
-                              SizedBox(
-                                width: double.infinity,
-
-                                child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.black,
-
-                                    foregroundColor: Colors.white,
-
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 20,
-                                    ),
-
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(22),
-                                    ),
-                                  ),
-
-                                  onPressed: () {
+                              // ======================
+                              // 💾 STEP 5 — SAVE BUTTON (NO BOX)
+                              // ======================
+                              Positioned(
+                                bottom: 60,
+                                right: 40,
+                                child: GestureDetector(
+                                  behavior: HitTestBehavior.opaque,
+                                  onTap: () {
                                     ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text("Expense Saved ✨"),
-                                      ),
+                                      const SnackBar(content: Text("Expense Saved ✨")),
                                     );
                                   },
-
-                                  child: const Text("Save Expense"),
+                                  child: const Text(
+                                    "Save →",
+                                    style: TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      fontFamily: 'serif',
+                                      color: Colors.black,
+                                    ),
+                                  ),
                                 ),
                               ),
                             ],
