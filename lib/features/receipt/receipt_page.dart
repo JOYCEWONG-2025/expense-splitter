@@ -148,12 +148,6 @@ class _ReceiptPageState extends State<ReceiptPage>
 
     _fadeAnim = Tween<double>(begin: 0.0, end: 1.0).animate(curve);
 
-    // 🐰 START RABBITS FIRST
-    Future.delayed(const Duration(milliseconds: 300), () {
-      setState(() => showCircle = true);
-      _circleController.forward();
-    });
-
     // ================================
     // 🐰 APPROACH ANIMATION CONTROLLER
     // ================================
@@ -168,10 +162,14 @@ class _ReceiptPageState extends State<ReceiptPage>
       });
     });
 
-    // 🐰 START APPROACH FLOW (NEW)
-    Future.delayed(const Duration(milliseconds: 800), () {
+    // 🐰 START RABBITS FIRST
+    Future.delayed(const Duration(milliseconds: 300), () {
       if (mounted) {
-        _approachController.forward();
+        setState(() {
+          showCircle = true;
+        });
+
+        _circleController.forward();
       }
     });
   }
@@ -201,18 +199,10 @@ class _ReceiptPageState extends State<ReceiptPage>
 
     final angle = (2 * pi * index) / total;
 
-    final circleOffset = Offset(
+    return Offset(
       radius * _circleController.value * cos(angle),
       radius * _circleController.value * sin(angle),
     );
-
-    // 🐰 APPROACH OFFSET (move toward center ball)
-    final approachOffset = Offset(
-      circleOffset.dx * (1 - approachProgress),
-      circleOffset.dy * (1 - approachProgress),
-    );
-
-    return approachOffset;
   }
 
   // ================================
@@ -221,6 +211,7 @@ class _ReceiptPageState extends State<ReceiptPage>
   void openReceipt() {
     setState(() {
       showReceipt = true;
+      sceneState = SceneState.receiptOpened;
     });
 
     _receiptController.forward(from: 0);
@@ -308,38 +299,58 @@ class _ReceiptPageState extends State<ReceiptPage>
                       );
 
                       // ================================
-                      // 🟡 STEP 1: leader approaches receipt
+                      // 🟡 STEP 1 — ONLY LEADER MOVES
                       // ================================
                       if (sceneState == SceneState.leaderApproaching) {
                         if (i == leaderIndex) {
                           base = Offset.lerp(
                             base,
-                            receiptPosition,
+                            const Offset(0, 40),
                             approachProgress,
                           )!;
                         }
                       }
+                      // ================================
+                      // 🟠 STEP 2 — OTHER RABBITS FOLLOW
+                      // ================================
+                      else if (sceneState == SceneState.groupArriving) {
+                        if (i == leaderIndex) {
+                          base = const Offset(0, 40);
+                        } else {
+                          final delay = (i - 1) * 0.12;
 
-                      // ================================
-                      // 🟠 STEP 2: group follows wave
-                      // ================================
-                      if (sceneState == SceneState.groupArriving) {
-                        final delay = i * 0.08;
-                        final t = (approachProgress - delay).clamp(0.0, 1.0);
-                        base = Offset.lerp(base, receiptPosition, t)!;
+                          final t = ((approachProgress - delay) / (1 - delay))
+                              .clamp(0.0, 1.0);
+
+                          base = Offset.lerp(
+                            base,
+                            Offset(base.dx * 0.45, base.dy * 0.45),
+                            t,
+                          )!;
+                        }
                       }
+                      // ================================
+                      // 🟣 STEP 3 — FORM SEMICIRCLE
+                      // ================================
+                      else if (sceneState == SceneState.semicircleFormed ||
+                          sceneState == SceneState.receiptReady ||
+                          showReceipt) {
+                        final radius = widget.members.length <= 4
+                            ? 320.0
+                            : 360.0;
 
-                      // ================================
-                      // 🟣 STEP 3: semicircle formation
-                      // ================================
-                      if (sceneState == SceneState.semicircleFormed) {
-                        final radius = 170.0;
-                        final angleStep = pi / (widget.members.length - 1);
-                        final angle = -pi / 2 + (i * angleStep);
+                        final startAngle = pi + 0.6;
+                        final endAngle = 2 * pi - 0.6;
+
+                        final angleStep =
+                            (endAngle - startAngle) /
+                            (widget.members.length - 1);
+
+                        final angle = startAngle + (i * angleStep);
 
                         base = Offset(
-                          receiptPosition.dx + radius * cos(angle),
-                          receiptPosition.dy + radius * sin(angle),
+                          radius * cos(angle),
+                          radius * sin(angle) + 35,
                         );
                       }
 
@@ -348,7 +359,7 @@ class _ReceiptPageState extends State<ReceiptPage>
                         offset: pos,
 
                         child: Transform.rotate(
-                          angle: showReceipt ? (pos.dx > 0 ? -0.12 : 0.12) : 0,
+                          angle: atan2(-pos.dy, -pos.dx) * 0.12,
 
                           child: Column(
                             mainAxisSize: MainAxisSize.min,
@@ -441,14 +452,14 @@ class _ReceiptPageState extends State<ReceiptPage>
             // 🧾 FLOATING MAGIC CRUMPLED RECEIPT BALL (CENTER FIXED)
             // ================================
             if (showCircle && !showReceipt)
-              Positioned(
+              Positioned.fill(
                 bottom: 40,
                 left: 0,
                 right: 0,
                 child: Align(
-                  alignment: Alignment.bottomCenter,
+                  alignment: Alignment.center,
                   child: GestureDetector(
-                    behavior: HitTestBehavior.opaque,
+                    behavior: HitTestBehavior.translucent,
                     onTap: sceneState == SceneState.receiptReady
                         ? openReceipt
                         : startSceneFlow,
