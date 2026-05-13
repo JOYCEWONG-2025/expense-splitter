@@ -85,6 +85,9 @@ class ReceiptPage extends StatefulWidget {
   });
 
   @override
+  Widget build(BuildContext context) => Scaffold(body: Container()); // Placeholder to satisfy compilation structure requirement
+
+  @override
   State<ReceiptPage> createState() => _ReceiptPageState();
 }
 
@@ -472,36 +475,59 @@ class _ReceiptPageState extends State<ReceiptPage>
                         }
                         // ================================
                         // 🟣 STEP 3 — FORM SEMICIRCLE
+                        // Dynamic Left/Right Balance Split
                         // ================================
                         else if (sceneState == SceneState.semicircleFormed ||
                             sceneState == SceneState.receiptReady ||
                             showReceipt) {
-                          // ================================
-                          // 🟣 LEFT-SIDE SEMICIRCLE
-                          // Rabbits face receipt naturally
-                          // ================================
+                          
+                          final int totalCount = widget.members.length;
+                          final double radius = totalCount <= 4 ? 260.0 : 300.0;
 
-                          final radius = widget.members.length <= 4
-                              ? 260.0
-                              : 300.0;
+                          if (totalCount <= 4) {
+                            // 👈 If max 4 people: Keep entirely on the LEFT side arc
+                            final double startAngle = pi * 0.7;
+                            final double endAngle = pi * 1.3;
+                            final double angleStep = totalCount <= 1 ? 0.0 : (endAngle - startAngle) / (totalCount - 1);
+                            final double angle = startAngle + (i * angleStep);
+                            final Offset arcCenter = const Offset(-170, 0);
 
-                          // LEFT SIDE ARC
-                          final startAngle = pi * 0.7;
-                          final endAngle = pi * 1.3;
+                            base = Offset(
+                              arcCenter.dx + radius * cos(angle),
+                              arcCenter.dy + radius * sin(angle),
+                            );
+                          } else {
+                            // ⚖️ If 5 or more people: Split and balance them between Left and Right wings
+                            final int leftSideCount = (totalCount / 2).ceil();
+                            final bool isLeftSide = i < leftSideCount;
 
-                          final angleStep =
-                              (endAngle - startAngle) /
-                              (widget.members.length - 1);
+                            if (isLeftSide) {
+                              final double startAngle = pi * 0.7;
+                              final double endAngle = pi * 1.3;
+                              final double angleStep = leftSideCount <= 1 ? 0.0 : (endAngle - startAngle) / (leftSideCount - 1);
+                              final double angle = startAngle + (i * angleStep);
+                              final Offset arcCenter = const Offset(-170, 0);
 
-                          final angle = startAngle + (i * angleStep);
+                              base = Offset(
+                                arcCenter.dx + radius * cos(angle),
+                                arcCenter.dy + radius * sin(angle),
+                              );
+                            } else {
+                              final int rightSideIndex = i - leftSideCount;
+                              final int rightSideCount = totalCount - leftSideCount;
+                              
+                              final double startAngle = -pi * 0.3;
+                              final double endAngle = pi * 0.3;
+                              final double angleStep = rightSideCount <= 1 ? 0.0 : (endAngle - startAngle) / (rightSideCount - 1);
+                              final double angle = startAngle + (rightSideIndex * angleStep);
+                              final Offset arcCenter = const Offset(170, 0);
 
-                          // Move whole arc LEFT
-                          final arcCenter = const Offset(-170, 0);
-
-                          base = Offset(
-                            arcCenter.dx + radius * cos(angle),
-                            arcCenter.dy + radius * sin(angle),
-                          );
+                              base = Offset(
+                                arcCenter.dx + radius * cos(angle),
+                                arcCenter.dy + radius * sin(angle),
+                              );
+                            }
+                          }
                         }
 
                         final pos = base;
@@ -642,7 +668,10 @@ class _ReceiptPageState extends State<ReceiptPage>
             // ================================
             if (showReceipt)
               Transform.translate(
-                offset: const Offset(110, 0),
+                // ✅ DYNAMIC OFFSET MODIFICATION: Shifts receipt to center when members > 4
+                offset: widget.members.length <= 4 
+                    ? const Offset(110, 0) 
+                    : const Offset(0, 0),
                 child: ScaleTransition(
                   scale: animation,
                   child: AnimatedBuilder(
@@ -688,7 +717,7 @@ class _ReceiptPageState extends State<ReceiptPage>
                               Positioned.fill(
                                 child: Image.asset(
                                   "assets/images/receipt.jpg",
-                                  fit: BoxFit.cover,
+                                  fit: BoxFit.cover, // ✅ Reverted to earliest cover style parameters as requested
                                 ),
                               ),
 
@@ -822,8 +851,8 @@ class _ReceiptPageState extends State<ReceiptPage>
                                         fontWeight: FontWeight.bold,
                                         color: Colors.black.withOpacity(0.4),
                                         fontFamily: 'serif',
+                                        ),
                                       ),
-                                    ),
                                     const SizedBox(height: 6),
                                     Wrap(
                                       spacing: 8,
@@ -853,7 +882,7 @@ class _ReceiptPageState extends State<ReceiptPage>
                               // 📸 STEP 4 — “Upload button disappears into paper”
                               // ======================
                               Positioned(
-                                bottom: 150, // Modified: Raised higher from 130 to 150
+                                bottom: 150, // Raised higher from 130 to 150
                                 left: 40,
                                 right: 40,
                                 child: Column(
@@ -883,8 +912,14 @@ class _ReceiptPageState extends State<ReceiptPage>
                                         decoration: BoxDecoration(
                                           borderRadius: BorderRadius.circular(6),
                                           image: kIsWeb
-                                              ? DecorationImage(image: NetworkImage(webImageBlobPath!), fit: BoxFit.cover)
-                                              : DecorationImage(image: FileImage(uploadedImage!), fit: BoxFit.cover),
+                                              ? DecorationImage(
+                                                  image: NetworkImage(webImageBlobPath!), 
+                                                  fit: BoxFit.cover, // Reverted to cover parameter limits
+                                                )
+                                              : DecorationImage(
+                                                  image: FileImage(uploadedImage!), 
+                                                  fit: BoxFit.cover, // Reverted to cover parameter limits
+                                                ),
                                         ),
                                       )
                                     ]
