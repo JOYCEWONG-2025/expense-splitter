@@ -190,13 +190,13 @@ class _ReceiptPageState extends State<ReceiptPage>
 
     _bookFlipController = AnimationController(
       vsync: this,
-      duration: const Duration(milliseconds: 1300),
+      duration: const Duration(milliseconds: 2200),
     );
 
     _coverOpenAnimation = Tween<double>(begin: 0.0, end: 1.0).animate(
       CurvedAnimation(
         parent: _bookFlipController,
-        curve: const Interval(0.0, 0.65, curve: Curves.easeInOutCubic),
+        curve: const Interval(0.15, 0.75, curve: Curves.easeInOutCubic),
       ),
     );
 
@@ -2121,7 +2121,68 @@ class _ReceiptPageState extends State<ReceiptPage>
                                               );
                                             }).toList(),
                                           ),
-                                        ],
+                                          // 2. ADD A LITTLE SPACE AND A DIVIDER FOR A CLEAN DIARY LOOK:
+                                          const SizedBox(height: 24),
+                                          const Divider(
+                                            color: Color(0xFFEADCC9),
+                                            thickness: 1.5,
+                                          ),
+                                          const SizedBox(height: 16),
+
+                                          Center(
+                                            child: ElevatedButton(
+                                              style: ElevatedButton.styleFrom(
+                                                backgroundColor: const Color(
+                                                  0xFF7FA99B,
+                                                ), // Soft Green Macaron Sage
+                                                foregroundColor: Colors.white,
+                                                elevation: 2,
+                                                shape: RoundedRectangleBorder(
+                                                  borderRadius:
+                                                      BorderRadius.circular(16),
+                                                ),
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                      horizontal: 32,
+                                                      vertical: 14,
+                                                    ),
+                                              ),
+
+                                              onPressed: () async {
+                                                // 1. 📖 Smoothly close the macaron diary cover panels first
+                                                await _bookFlipController
+                                                    .reverse();
+
+                                                // 2. 🏰 TELEPORT ROOT STACK CLEAR: Instantly drop back to HomePage in main.dart.
+                                                // This automatically disposes of this screen and wipes its memory clean!
+                                                if (mounted) {
+                                                  Navigator.of(
+                                                    context,
+                                                  ).popUntil(
+                                                    (route) => route.isFirst,
+                                                  );
+                                                }
+                                              },
+
+                                              child: const Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Icon(Icons.castle, size: 20),
+                                                  SizedBox(width: 10),
+                                                  Text(
+                                                    "Back to Home 🏰",
+                                                    style: TextStyle(
+                                                      fontFamily: "Caveat",
+                                                      fontSize: 20,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                ],
+                                              ),
+                                            ),
+                                          ), // 🏰 Button ends here
+                                        ], // This closes your right-page main Column
                                       ),
                                     ),
                                   ),
