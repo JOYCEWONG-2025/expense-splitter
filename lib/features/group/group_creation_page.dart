@@ -24,6 +24,63 @@ class _GroupCreationPageState extends State<GroupCreationPage> {
 
   List<RabbitModel> members = [];
 
+  // 🪄 DISNEY STYLE INLINE MEMBER NAME EDITING UTILITY
+  void _editRabbitName(int index) {
+    final TextEditingController editController = 
+        TextEditingController(text: members[index].name);
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: Colors.white,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
+          title: const Text(
+            "Change Friend Identity 🪄", 
+            style: TextStyle(fontFamily: "Caveat", fontSize: 24, fontWeight: FontWeight.bold)
+          ),
+          content: TextField(
+            controller: editController,
+            style: const TextStyle(fontFamily: "Caveat", fontSize: 20),
+            decoration: InputDecoration(
+              filled: true,
+              fillColor: const Color(0xFFF6F1F8),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(14),
+                borderSide: BorderSide.none,
+              ),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Cancel", style: TextStyle(color: Colors.grey)),
+            ),
+            ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.black,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+              onPressed: () {
+                if (editController.text.isNotEmpty) {
+                  setState(() {
+                    members[index] = RabbitModel(
+                      name: editController.text,
+                      rabbitAsset: members[index].rabbitAsset,
+                    );
+                  });
+                  Navigator.pop(context);
+                }
+              },
+              child: const Text("Apply ✨"),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -150,10 +207,47 @@ class _GroupCreationPageState extends State<GroupCreationPage> {
                 itemCount: members.length,
 
                 itemBuilder: (context, index) {
-                  return RabbitCard(
-                    rabbitName: members[index].name,
-
-                    rabbitAsset: members[index].rabbitAsset,
+                  // 🪄 WRAPPED IN A DISNEY-STYLE ROW FEATURING ACTION TRIGGERS
+                  return Stack(
+                    alignment: Alignment.centerRight,
+                    children: [
+                      Padding(
+                        padding: const EdgeInsets.only(right: 90.0), // Makes room for tail buttons
+                        // 🪄 Theme Font Applied directly over the Card row text context via DefaultTextStyle block injection
+                        child: DefaultTextStyle(
+                          style: const TextStyle(
+                            fontFamily: "PatrickHand", // ✨ Feel free to change this to "Delius" or "Fredoka" once downloaded!
+                            fontSize: 22,
+                            color: Colors.black87,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          child: RabbitCard(
+                            rabbitName: members[index].name,
+                            rabbitAsset: members[index].rabbitAsset,
+                          ),
+                        ),
+                      ),
+                      Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          // ✏️ EDIT BUTTON
+                          IconButton(
+                            icon: const Icon(Icons.edit_outlined, color: Colors.purple, size: 22),
+                            onPressed: () => _editRabbitName(index),
+                          ),
+                          // 🗑️ DELETE BUTTON
+                          IconButton(
+                            icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 22),
+                            onPressed: () {
+                              setState(() {
+                                members.removeAt(index);
+                              });
+                            },
+                          ),
+                          const SizedBox(width: 16),
+                        ],
+                      ),
+                    ],
                   );
                 },
               ),

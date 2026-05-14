@@ -17,9 +17,11 @@ dependencies:
   cupertino_icons: ^1.0.8
   shared_preferences: ^2.2.0
   image_picker: ^1.0.0
+  pdfx: ^2.6.0
   fl_chart: ^0.66.0
   flutter_localizations:
     sdk: flutter
+  file_picker: ^8.0.0
   lottie: ^3.1.0
   animations: ^2.0.11
 
@@ -38,6 +40,12 @@ flutter:
     - family: Caveat
       fonts:
         - asset: assets/fonts/Caveat-Regular.ttf
+    
+        - asset: assets/fonts/PatrickHand-Regular.ttf
+        
+    - family: PatrickHand  # 👈 Add this new family name configuration!
+      fonts:
+        - asset: assets/fonts/PatrickHand-Regular.ttf
 
   assets:
     - assets/backgrounds/food.jpg
