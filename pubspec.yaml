@@ -1,10 +1,7 @@
 name: expense_splitter
 description: "A new Flutter project."
-# The following line prevents the package from being accidentally published to
-# pub.dev using `flutter pub publish`. This is preferred for private packages.
-publish_to: 'none' # Remove this line if you wish to publish to pub.dev
+publish_to: 'none'
 
-# The following defines the version and build number for your application.
 version: 1.0.0+1
 
 environment:
@@ -23,6 +20,8 @@ dependencies:
     sdk: flutter
   file_picker: ^8.0.0
   lottie: ^3.1.0
+  video_player: ^2.8.2
+  audioplayers: ^5.2.1
   animations: ^2.0.11
 
 dev_dependencies:
@@ -33,26 +32,21 @@ dev_dependencies:
 flutter:
   uses-material-design: true
 
-  # ==========================================
-  # 🎨 DISNEY / CINEMATIC HANDWRITING FONTS
-  # ==========================================
   fonts:
     - family: Caveat
       fonts:
         - asset: assets/fonts/Caveat-Regular.ttf
     
-        - asset: assets/fonts/PatrickHand-Regular.ttf
-        
-    - family: PatrickHand  # 👈 Add this new family name configuration!
+    - family: PatrickHand
       fonts:
         - asset: assets/fonts/PatrickHand-Regular.ttf
 
   assets:
     - assets/backgrounds/food.jpg
-    - assets/backgrounds/transport.jpeg
+    - assets/backgrounds/transport.jpg
     - assets/backgrounds/shopping.jpg
     - assets/backgrounds/Accomo.jpg
-    - assets/backgrounds/trip.jpeg
+    - assets/backgrounds/trip.jpg
     - assets/backgrounds/others.jpg
     - assets/images/crumpled_ball.png
     - assets/images/receipt.jpg
@@ -61,3 +55,16 @@ flutter:
     - assets/rabbits/Running rabbit.json
     - assets/rabbits/bunny_hop.json
     - assets/rabbits/Rabbit Kick Scooter.json
+    # ✅ Fixed the spacing here:
+    - assets/videos/food.MP4
+    - assets/videos/transport.MP4
+    - assets/videos/shopping.MOV
+    - assets/videos/Accomo.MP4
+    - assets/videos/trip.MP4
+    - assets/videos/others.MP4
+    - assets/sounds/Acco_sound.mp3
+    - assets/sounds/food_sound.mp3
+    - assets/sounds/shopping_sound.mp3
+    - assets/sounds/transport_sound.mp3
+    - assets/sounds/trip_sound.mp3
+    - assets/sounds/other_sound.mp3
