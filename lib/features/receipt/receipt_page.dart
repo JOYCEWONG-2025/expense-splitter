@@ -227,7 +227,7 @@ class _ReceiptPageState extends State<ReceiptPage>
         setState(() {
           showCircle = true;
         });
-        _circleController.forward();
+          _circleController.forward();
       }
     });
   }
@@ -344,6 +344,7 @@ class _ReceiptPageState extends State<ReceiptPage>
     );
   }
 
+  // 🪄 POLISHED DISNEY-STYLE INDIVIDUAL RABBIT EXPENDITURE INPUT POPUP
   void _openRabbitCustomLedgerForm(String name) {
     final TextEditingController itemNameInput = TextEditingController();
     final TextEditingController itemCostInput = TextEditingController();
@@ -356,22 +357,41 @@ class _ReceiptPageState extends State<ReceiptPage>
           builder: (context, setInnerState) {
             return AlertDialog(
               backgroundColor: Colors.white,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-              title: Text("🐰 Customize $name's Story", style: const TextStyle(fontFamily: "Caveat", fontSize: 24, fontWeight: FontWeight.bold)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              title: Text("🐰 $name's Travel Diary Entry ✨", style: const TextStyle(fontFamily: "Caveat", fontSize: 26, fontWeight: FontWeight.bold, color: Colors.black87)),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  TextField(controller: itemNameInput, decoration: const InputDecoration(hintText: "What did they pay for? (e.g., Food 🍖)")),
-                  TextField(controller: itemCostInput, keyboardType: TextInputType.number, decoration: const InputDecoration(hintText: "Total expense amount")),
-                  const SizedBox(height: 16),
-                  const Align(alignment: Alignment.centerLeft, child: Text("Split Shared Among:", style: TextStyle(fontFamily: "Caveat", fontSize: 16, fontWeight: FontWeight.bold))),
-                  const SizedBox(height: 6),
+                  Text("What magical thing did you buy?", style: TextStyle(fontFamily: "Caveat", fontSize: 18, color: Colors.purple.shade400, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  TextField(
+                    controller: itemNameInput, 
+                    style: const TextStyle(fontFamily: "Caveat", fontSize: 18),
+                    decoration: const InputDecoration(hintText: "e.g., Train Rides 🚂, Yummy Feast 🍖"),
+                  ),
+                  const SizedBox(height: 18),
+                  Text("How many coins did it cost? 🪙", style: TextStyle(fontFamily: "Caveat", fontSize: 18, color: Colors.purple.shade400, fontWeight: FontWeight.bold)),
+                  const SizedBox(height: 4),
+                  TextField(
+                    controller: itemCostInput, 
+                    keyboardType: TextInputType.number, 
+                    style: const TextStyle(fontFamily: "Caveat", fontSize: 18),
+                    decoration: const InputDecoration(hintText: "0.00"),
+                  ),
+                  const SizedBox(height: 22),
+                  const Align(
+                    alignment: Alignment.centerLeft, 
+                    child: Text("Share this cost with your companions: 👥", style: TextStyle(fontFamily: "Caveat", fontSize: 18, fontWeight: FontWeight.bold, color: Colors.black54))
+                  ),
+                  const SizedBox(height: 8),
                   Wrap(
                     spacing: 6,
+                    runSpacing: 4,
                     children: widget.members.map((friend) {
                       final bool isChecked = involvedParty.contains(friend);
                       return ChoiceChip(
-                        label: Text(friend, style: const TextStyle(fontFamily: "Caveat", fontSize: 14)),
+                        label: Text(friend, style: const TextStyle(fontFamily: "Caveat", fontSize: 15)),
                         selected: isChecked,
                         selectedColor: Colors.purple.shade100,
                         onSelected: (val) {
@@ -397,10 +417,14 @@ class _ReceiptPageState extends State<ReceiptPage>
                     Navigator.pop(context);
                     ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text("$name skipped this entry round.")));
                   },
-                  child: const Text("Skip Rabbit 🍃", style: TextStyle(color: Colors.grey)),
+                  child: const Text("Skip Rabbit 🍃", style: TextStyle(fontFamily: "Caveat", fontSize: 18, color: Colors.grey, fontWeight: FontWeight.bold)),
                 ),
                 ElevatedButton(
-                  style: ElevatedButton.styleFrom(backgroundColor: Colors.black87),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.black87,
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                    padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10)
+                  ),
                   onPressed: () {
                     if (itemNameInput.text.isNotEmpty && itemCostInput.text.isNotEmpty) {
                       setState(() {
@@ -413,7 +437,7 @@ class _ReceiptPageState extends State<ReceiptPage>
                       Navigator.pop(context);
                     }
                   },
-                  child: const Text("Save Entry", style: TextStyle(color: Colors.white)),
+                  child: const Text("Add to Ledger 📖", style: TextStyle(fontFamily: "Caveat", fontSize: 18, color: Colors.white, fontWeight: FontWeight.bold)),
                 )
               ],
             );
@@ -495,186 +519,18 @@ class _ReceiptPageState extends State<ReceiptPage>
         elevation: 0,
         title: Text("${widget.groupName} 🐰 Receipt"),
       ),
-      body: Center(
+      // ✅ SOLUTION STEP: Swapped Center for a fullscreen SizedBox.expand layout container.
+      // This forces the Stack layer grid to size itself to 100% of the screen window bounds,
+      // bringing back touch alignment coordinates for any offset rabbits outside the receipt boundary lines!
+      body: SizedBox.expand(
         child: Stack(
           alignment: Alignment.center,
           children: [
             // ==========================================
-            // LAYER 1: THE RABBIT WORKSPACE 
+            // LAYER 1: THE CRUMPLED BALL ICON (Background Layer)
             // ==========================================
-            if (showCircle)
-              IgnorePointer(
-                ignoring: !showReceipt, 
-                child: RepaintBoundary(
-                  child: AnimatedBuilder(
-                    animation: Listenable.merge([_circleController, _approachController, _unfoldController]),
-                    builder: (context, child) {
-                      approachProgress = _approachController.value;
-                      return Stack(
-                        alignment: Alignment.center,
-                        children: List.generate(widget.members.length, (i) {
-                          final animatedRadius = lerpDouble(
-                            155,
-                            widget.members.length <= 4 ? 420 : 360,
-                            _unfoldController.value,
-                        )!;
-
-                        Offset base = getPosition(i, widget.members.length, animatedRadius);
-
-                        if (sceneState == SceneState.receiptOpened) {
-                          final int totalCount = widget.members.length;
-                          final double radius = totalCount <= 4 ? 260.0 : 300.0;
-                          if (totalCount <= 4) {
-                            final double startAngle = pi * 0.7;
-                            final double endAngle = pi * 1.3;
-                            final double angleStep = totalCount <= 1 ? 0.0 : (endAngle - startAngle) / (totalCount - 1);
-                            base = Offset(const Offset(-170, 0).dx + radius * cos(startAngle + (i * angleStep)), const Offset(-170, 0).dy + radius * sin(startAngle + (i * angleStep)));
-                          } else {
-                            final int leftSideCount = (totalCount / 2).ceil();
-                            if (i < leftSideCount) {
-                              final double startAngle = pi * 0.7;
-                              final double endAngle = pi * 1.3;
-                              final double angleStep = leftSideCount <= 1 ? 0.0 : (endAngle - startAngle) / (leftSideCount - 1);
-                              base = Offset(const Offset(-170, 0).dx + radius * cos(startAngle + (i * angleStep)), const Offset(-170, 0).dy + radius * sin(startAngle + (i * angleStep)));
-                            } else {
-                              final int rightSideIndex = i - leftSideCount;
-                              final int rightSideCount = totalCount - leftSideCount;
-                              final double startAngle = -pi * 0.3;
-                              final double endAngle = pi * 0.3;
-                              final double angleStep = rightSideCount <= 1 ? 0.0 : (endAngle - startAngle) / (rightSideCount - 1);
-                              base = Offset(const Offset(170, 0).dx + radius * cos(startAngle + (rightSideIndex * angleStep)), const Offset(170, 0).dy + radius * sin(startAngle + (rightSideIndex * angleStep)));
-                            }
-                          }
-                        } else {
-                          if (sceneState == SceneState.leaderApproaching && i == leaderIndex) {
-                            base = Offset.lerp(base, const Offset(0, 40), approachProgress)!;
-                          } else if (sceneState == SceneState.groupArriving) {
-                            if (i == leaderIndex) {
-                              base = const Offset(0, 40);
-                            } else {
-                              final delay = (i - 1) * 0.12;
-                              final t = ((approachProgress - delay) / (1 - delay)).clamp(0.0, 1.0);
-                              base = Offset.lerp(base, Offset(base.dx * 0.45, base.dy * 0.45), t)!;
-                            }
-                          } else if (sceneState == SceneState.semicircleFormed || sceneState == SceneState.receiptReady) {
-                            final int totalCount = widget.members.length;
-                            final double radius = totalCount <= 4 ? 260.0 : 300.0;
-                            if (totalCount <= 4) {
-                              final double startAngle = pi * 0.7;
-                              final double endAngle = pi * 1.3;
-                              final double angleStep = totalCount <= 1 ? 0.0 : (endAngle - startAngle) / (totalCount - 1);
-                              base = Offset(const Offset(-170, 0).dx + radius * cos(startAngle + (i * angleStep)), const Offset(-170, 0).dy + radius * sin(startAngle + (i * angleStep)));
-                            } else {
-                              final int leftSideCount = (totalCount / 2).ceil();
-                              if (i < leftSideCount) {
-                                final double startAngle = pi * 0.7;
-                                final double endAngle = pi * 1.3;
-                                final double angleStep = leftSideCount <= 1 ? 0.0 : (endAngle - startAngle) / (leftSideCount - 1);
-                                base = Offset(const Offset(-170, 0).dx + radius * cos(startAngle + (i * angleStep)), const Offset(-170, 0).dy + radius * sin(startAngle + (i * angleStep)));
-                              } else {
-                                final int rightSideIndex = i - leftSideCount;
-                                final int rightSideCount = totalCount - leftSideCount;
-                                final double startAngle = -pi * 0.3;
-                                final double endAngle = pi * 0.3;
-                                final double angleStep = rightSideCount <= 1 ? 0.0 : (endAngle - startAngle) / (rightSideCount - 1);
-                                base = Offset(const Offset(170, 0).dx + radius * cos(startAngle + (rightSideIndex * angleStep)), const Offset(170, 0).dy + radius * sin(startAngle + (rightSideIndex * angleStep)));
-                              }
-                            }
-                          }
-                        }
-
-                        final pos = base;
-                        final currentRabbitName = widget.members[i];
-
-                        return Transform.translate(
-                          offset: pos,
-                          child: Transform.rotate(
-                            angle: atan2(-pos.dy, -pos.dx) * 0.12,
-                            child: GestureDetector(
-                              key: ValueKey("rabbit_$currentRabbitName"),
-                              behavior: HitTestBehavior.opaque, 
-                              onTap: () {
-                                if (showReceipt && isSelectiveModeActive) {
-                                  _openRabbitCustomLedgerForm(currentRabbitName);
-                                } else if (!showReceipt) {
-                                  toggleMember(currentRabbitName);
-                                }
-                              },
-                              child: Stack(
-                                clipBehavior: Clip.none,
-                                alignment: Alignment.topCenter,
-                                children: [
-                                  Column(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      AnimatedContainer(
-                                        duration: const Duration(milliseconds: 250),
-                                        padding: const EdgeInsets.all(6),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          boxShadow: selectedMembers.contains(currentRabbitName) ? [BoxShadow(color: Colors.amber.withOpacity(0.7), blurRadius: 25, spreadRadius: 4)] : [],
-                                        ),
-                                        child: AnimatedScale(
-                                          duration: const Duration(milliseconds: 250),
-                                          scale: showReceipt ? 0.88 : (selectedMembers.contains(currentRabbitName) ? 1.15 : 1.0),
-                                          child: Lottie.asset("assets/rabbits/Rabbit Kick Scooter.json", width: 145, height: 145),
-                                        ),
-                                      ),
-                                      const SizedBox(height: 4),
-                                      Container(
-                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), borderRadius: BorderRadius.circular(10)),
-                                        child: Text(currentRabbitName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
-                                      ),
-                                    ],
-                                  ),
-                                  if (currentRabbitName == firstUnconfiguredRabbit)
-                                    AnimatedBuilder(
-                                      animation: _bounceAnimation,
-                                      builder: (context, child) {
-                                        return Positioned(
-                                          top: -30 + _bounceAnimation.value,
-                                          child: child!,
-                                        );
-                                      },
-                                      child: Material(
-                                        color: Colors.purple.shade700,
-                                        elevation: 6,
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: const Padding(
-                                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
-                                            children: [
-                                              Text(
-                                                "Tap Me!",
-                                                style: TextStyle(fontFamily: "Caveat", color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-                                              ),
-                                              SizedBox(width: 4),
-                                              Text(
-                                                "🐾",
-                                                style: TextStyle(color: Colors.white, fontSize: 14), 
-                                              )
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          ),
-                        );
-                      }),
-                    );
-                  },
-                ),
-              ),
-            ),
-
             if (showCircle && !showReceipt)
               Positioned.fill(
-                bottom: 40,
                 child: Align(
                   alignment: Alignment.center,
                   child: GestureDetector(
@@ -706,7 +562,7 @@ class _ReceiptPageState extends State<ReceiptPage>
               ),
 
             // ==========================================
-            // LAYER 2: THE UNFOLDED RECEIPT SHEET
+            // LAYER 2: THE UNFOLDED RECEIPT SHEET (Middle Background Layer)
             // ==========================================
             if (showReceipt)
               Transform.translate(
@@ -855,9 +711,6 @@ class _ReceiptPageState extends State<ReceiptPage>
                                 ),
                               ),
 
-                              // ==========================================
-                              // 📸 IMAGE ATTACHMENT FIELD
-                              // ==========================================
                               Positioned(
                                 bottom: 165,
                                 left: 40,
@@ -894,11 +747,6 @@ class _ReceiptPageState extends State<ReceiptPage>
                                 ),
                               ),
 
-                              // ========================================================
-                              // 🧾 FINE-TUNED SELECTIVE SPLIT TRIGGER
-                              // ✅ LOCKED COORD POSITION: Set at exactly bottom: 132 so it floats safely
-                              // underneath the file attachment widget zone.
-                              // ========================================================
                               Positioned(
                                 bottom: 132, 
                                 left: 40,
@@ -946,6 +794,186 @@ class _ReceiptPageState extends State<ReceiptPage>
                         ),
                       ),
                     ),
+                  ),
+                ),
+              ),
+
+            // ==========================================
+            // LAYER 3: THE RABBIT WORKSPACE (Foreground Layer)
+            // ==========================================
+            if (showCircle)
+              Positioned.fill(
+                child: IgnorePointer(
+                  // ✅ FIXING POINTER LOGIC: Hand touch vectors down perfectly only when Selective Split Mode is fully operational
+                  ignoring: isSelectiveModeActive ? false : !showReceipt,
+                  child: AnimatedBuilder(
+                    animation: Listenable.merge([_circleController, _approachController, _unfoldController]),
+                    builder: (context, child) {
+                      approachProgress = _approachController.value;
+                      return Stack(
+                        alignment: Alignment.center,
+                        children: List.generate(widget.members.length, (i) {
+                          final animatedRadius = lerpDouble(
+                            155,
+                            widget.members.length <= 4 ? 420 : 360,
+                            _unfoldController.value,
+                          )!;
+
+                          Offset base = getPosition(i, widget.members.length, animatedRadius);
+
+                          if (sceneState == SceneState.receiptOpened) {
+                            final int totalCount = widget.members.length;
+                            final double radius = totalCount <= 4 ? 260.0 : 300.0;
+                            if (totalCount <= 4) {
+                              final double startAngle = pi * 0.7;
+                              final double endAngle = pi * 1.3;
+                              final double angleStep = totalCount <= 1 ? 0.0 : (endAngle - startAngle) / (totalCount - 1);
+                              base = Offset(const Offset(-170, 0).dx + radius * cos(startAngle + (i * angleStep)), const Offset(-170, 0).dy + radius * sin(startAngle + (i * angleStep)));
+                            } else {
+                              final int leftSideCount = (totalCount / 2).ceil();
+                              if (i < leftSideCount) {
+                                final double startAngle = pi * 0.7;
+                                final double endAngle = pi * 1.3;
+                                final double angleStep = leftSideCount <= 1 ? 0.0 : (endAngle - startAngle) / (leftSideCount - 1);
+                                base = Offset(const Offset(-170, 0).dx + radius * cos(startAngle + (i * angleStep)), const Offset(-170, 0).dy + radius * sin(startAngle + (i * angleStep)));
+                              } else {
+                                final int rightSideIndex = i - leftSideCount;
+                                final int rightSideCount = totalCount - leftSideCount;
+                                final double startAngle = -pi * 0.3;
+                                final double endAngle = pi * 0.3;
+                                final double angleStep = rightSideCount <= 1 ? 0.0 : (endAngle - startAngle) / (rightSideCount - 1);
+                                base = Offset(const Offset(170, 0).dx + radius * cos(startAngle + (rightSideIndex * angleStep)), const Offset(170, 0).dy + radius * sin(startAngle + (rightSideIndex * angleStep)));
+                              }
+                            }
+                          } else {
+                            if (sceneState == SceneState.leaderApproaching && i == leaderIndex) {
+                              base = Offset.lerp(base, const Offset(0, 40), approachProgress)!;
+                            } else if (sceneState == SceneState.groupArriving) {
+                              if (i == leaderIndex) {
+                                base = const Offset(0, 40);
+                              } else {
+                                final delay = (i - 1) * 0.12;
+                                final t = ((approachProgress - delay) / (1 - delay)).clamp(0.0, 1.0);
+                                base = Offset.lerp(base, Offset(base.dx * 0.45, base.dy * 0.45), t)!;
+                              }
+                            } else if (sceneState == SceneState.semicircleFormed || sceneState == SceneState.receiptReady) {
+                              final int totalCount = widget.members.length;
+                              final double radius = totalCount <= 4 ? 260.0 : 300.0;
+                              if (totalCount <= 4) {
+                                final double startAngle = pi * 0.7;
+                                final double endAngle = pi * 1.3;
+                                final double angleStep = totalCount <= 1 ? 0.0 : (endAngle - startAngle) / (totalCount - 1);
+                                base = Offset(const Offset(-170, 0).dx + radius * cos(startAngle + (i * angleStep)), const Offset(-170, 0).dy + radius * sin(startAngle + (i * angleStep)));
+                              } else {
+                                final int leftSideCount = (totalCount / 2).ceil();
+                                if (i < leftSideCount) {
+                                  final double startAngle = pi * 0.7;
+                                  final double endAngle = pi * 1.3;
+                                  final double angleStep = leftSideCount <= 1 ? 0.0 : (endAngle - startAngle) / (leftSideCount - 1);
+                                  base = Offset(const Offset(-170, 0).dx + radius * cos(startAngle + (i * angleStep)), const Offset(-170, 0).dy + radius * sin(startAngle + (i * angleStep)));
+                                } else {
+                                  final int rightSideIndex = i - leftSideCount;
+                                  final int rightSideCount = totalCount - leftSideCount;
+                                  final double startAngle = -pi * 0.3;
+                                  final double endAngle = pi * 0.3;
+                                  final double angleStep = rightSideCount <= 1 ? 0.0 : (endAngle - startAngle) / (rightSideCount - 1);
+                                  base = Offset(const Offset(170, 0).dx + radius * cos(startAngle + (rightSideIndex * angleStep)), const Offset(170, 0).dy + radius * sin(startAngle + (rightSideIndex * angleStep)));
+                                }
+                              }
+                            }
+                          }
+
+                          final pos = base;
+                          final currentRabbitName = widget.members[i];
+
+                          return Transform.translate(
+                            offset: pos,
+                            child: Transform.rotate(
+                              angle: atan2(-pos.dy, -pos.dx) * 0.12,
+                              child: Stack(
+                                clipBehavior: Clip.none,
+                                alignment: Alignment.topCenter,
+                                children: [
+                                  Column(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      AnimatedContainer(
+                                        duration: const Duration(milliseconds: 250),
+                                        padding: const EdgeInsets.all(6),
+                                        decoration: BoxDecoration(
+                                          shape: BoxShape.circle,
+                                          boxShadow: selectedMembers.contains(currentRabbitName) ? [BoxShadow(color: Colors.amber.withOpacity(0.7), blurRadius: 25, spreadRadius: 4)] : [],
+                                        ),
+                                        child: AnimatedScale(
+                                          duration: const Duration(milliseconds: 250),
+                                          scale: showReceipt ? 0.88 : (selectedMembers.contains(currentRabbitName) ? 1.15 : 1.0),
+                                          child: Lottie.asset("assets/rabbits/Rabbit Kick Scooter.json", width: 145, height: 145),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 4),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                        decoration: BoxDecoration(color: Colors.white.withOpacity(0.9), borderRadius: BorderRadius.circular(10)),
+                                        child: Text(currentRabbitName, style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 13)),
+                                      ),
+                                    ],
+                                  ),
+                                  // 🚨 OVERLAY INKWELL SIZED BOX: Completely covers the visual bounds of the rabbit vector frame
+                                  Positioned.fill(
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () {
+                                        if (showReceipt && isSelectiveModeActive) {
+                                          _openRabbitCustomLedgerForm(currentRabbitName);
+                                        } else if (!showReceipt) {
+                                          toggleMember(currentRabbitName);
+                                        }
+                                      },
+                                      child: const SizedBox.expand(
+                                        child: ColoredBox(color: Colors.transparent),
+                                      ),
+                                    ),
+                                  ),
+                                  if (currentRabbitName == firstUnconfiguredRabbit)
+                                    AnimatedBuilder(
+                                      animation: _bounceAnimation,
+                                      builder: (context, child) {
+                                        return Positioned(
+                                          top: -30 + _bounceAnimation.value,
+                                          child: child!,
+                                        );
+                                      },
+                                      child: Material(
+                                        color: Colors.purple.shade700,
+                                        elevation: 6,
+                                        borderRadius: BorderRadius.circular(10),
+                                        child: const Padding(
+                                          padding: EdgeInsets.symmetric(horizontal: 10, vertical: 5),
+                                          child: Row(
+                                            mainAxisSize: MainAxisSize.min,
+                                            children: [
+                                              Text(
+                                                "Tap Me!",
+                                                style: TextStyle(fontFamily: "Caveat", color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+                                              ),
+                                              SizedBox(width: 4),
+                                              Icon(
+                                                Icons.pets,
+                                                color: Colors.white,
+                                                size: 14,
+                                              )
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                            ),
+                          );
+                        }),
+                      );
+                    },
                   ),
                 ),
               ),
