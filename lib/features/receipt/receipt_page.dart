@@ -14,6 +14,7 @@ enum SceneState {
   semicircleFormed,
   receiptReady,
   receiptOpened,
+  summaryView, // ✨ NEW STATE: The Magical Book-Flip Summary Canvas
 }
 
 // ✍️ STEP 3 — “INK WRITING ANIMATION” (Enhanced with character-by-character reveal)
@@ -100,6 +101,12 @@ class _ReceiptPageState extends State<ReceiptPage>
   bool isSelectiveModeActive = false;
   final Map<String, List<Map<String, dynamic>>> selectiveLedgers = {};
 
+  // 🪙 NEW DATA STRUCTURES FOR MAGIC MATHEMATICS
+  List<Map<String, dynamic>> computedDebts = [];
+  Map<String, double> totalSpendingPerRabbit = {};
+  Map<String, double> totalBenefitPerRabbit = {};
+  bool isEntirelySettled = false;
+
   // 🎬 RECEIPT ANIMATION (KEEP ORIGINAL LOGIC)
   late AnimationController _receiptController;
   late Animation<double> animation;
@@ -130,6 +137,10 @@ class _ReceiptPageState extends State<ReceiptPage>
   // 🎈 TAP ME EXPRESSION MOTION ANIMATION CONTROLLER
   late AnimationController _bounceController;
   late Animation<double> _bounceAnimation;
+
+  // 📖 NEW BOOK FLIP TRANSITION ANIMATION CONTROLLERS
+  late AnimationController _bookFlipController;
+  late Animation<double> _bookFlipAnimation;
 
   File? uploadedImage;
   String? webImageBlobPath;
@@ -172,6 +183,16 @@ class _ReceiptPageState extends State<ReceiptPage>
     _unfoldController = AnimationController(
       vsync: this,
       duration: const Duration(milliseconds: 900),
+    );
+
+    _bookFlipController = AnimationController(
+      vsync: this,
+      duration: const Duration(milliseconds: 1000),
+    );
+
+    _bookFlipAnimation = CurvedAnimation(
+      parent: _bookFlipController,
+      curve: Curves.easeInOutCubic,
     );
 
     _floatingController = AnimationController(
@@ -220,6 +241,8 @@ class _ReceiptPageState extends State<ReceiptPage>
 
     for (var member in widget.members) {
       selectiveLedgers[member] = [];
+      totalSpendingPerRabbit[member] = 0.0;
+      totalBenefitPerRabbit[member] = 0.0;
     }
 
     Future.delayed(const Duration(milliseconds: 300), () {
@@ -227,7 +250,7 @@ class _ReceiptPageState extends State<ReceiptPage>
         setState(() {
           showCircle = true;
         });
-          _circleController.forward();
+        _circleController.forward();
       }
     });
   }
@@ -240,6 +263,7 @@ class _ReceiptPageState extends State<ReceiptPage>
     _floatingController.dispose();
     _bounceController.dispose();
     _approachController.dispose();
+    _bookFlipController.dispose();
     descriptionController.dispose();
     amountController.dispose();
     super.dispose();
@@ -344,7 +368,6 @@ class _ReceiptPageState extends State<ReceiptPage>
     );
   }
 
-  // 🪄 POLISHED DISNEY-STYLE INDIVIDUAL RABBIT EXPENDITURE INPUT POPUP
   void _openRabbitCustomLedgerForm(String name) {
     final TextEditingController itemNameInput = TextEditingController();
     final TextEditingController itemCostInput = TextEditingController();
@@ -447,6 +470,172 @@ class _ReceiptPageState extends State<ReceiptPage>
     );
   }
 
+  // 🪙 EXECUTABLE TREASURY ALGORITHM ENGINE FOR STABLE RE-ARRANGEMENTS
+  void _executeSettlementMathematics() {
+    Map<String, double> balances = {};
+    for (var m in widget.members) {
+      balances[m] = 0.0;
+      totalSpendingPerRabbit[m] = 0.0;
+      totalBenefitPerRabbit[m] = 0.0;
+    }
+
+    if (!isSelectiveModeActive) {
+      // GLOBAL MODE CALCULATION
+      double totalCost = double.tryParse(amountController.text) ?? 0.0;
+      String payer = selectedPayer ?? (widget.members.isNotEmpty ? widget.members.first : "");
+      List<String> activeConsumers = selectedMembers.isEmpty ? widget.members : selectedMembers;
+
+      if (widget.members.contains(payer)) {
+        totalSpendingPerRabbit[payer] = totalCost;
+      }
+      
+      double costPerHead = activeConsumers.isNotEmpty ? (totalCost / activeConsumers.length) : 0.0;
+      for (var consumer in activeConsumers) {
+        totalBenefitPerRabbit[consumer] = costPerHead;
+      }
+
+      for (var m in widget.members) {
+        balances[m] = totalSpendingPerRabbit[m]! - totalBenefitPerRabbit[m]!;
+      }
+    } else {
+      // SELECTIVE LEDGER ENGINE DECOMPOSITION LOOP
+      selectiveLedgers.forEach((payer, entryList) {
+        for (var entry in entryList) {
+          double cost = entry["cost"] ?? 0.0;
+          List<String> sharingList = List<String>.from(entry["splitWith"] ?? []);
+          
+          totalSpendingPerRabbit[payer] = (totalSpendingPerRabbit[payer] ?? 0.0) + cost;
+          if (sharingList.isNotEmpty) {
+            double sharedPart = cost / sharingList.length;
+            for (var recipient in sharingList) {
+              totalBenefitPerRabbit[recipient] = (totalBenefitPerRabbit[recipient] ?? 0.0) + sharedPart;
+            }
+          }
+        }
+      });
+
+      for (var m in widget.members) {
+        balances[m] = (totalSpendingPerRabbit[m] ?? 0.0) - (totalBenefitPerRabbit[m] ?? 0.0);
+      }
+    }
+
+    // GREEDY TWO-POINTER DEBT MINIMIZER MIN-MAX MATCHER
+    computedDebts.clear();
+    List<Map<String, dynamic>> debtors = [];
+    List<Map<String, dynamic>> creditors = [];
+
+    balances.forEach((rabbit, bal) {
+      if (bal < -0.01) {
+        debtors.add({"name": rabbit, "bal": bal.abs()});
+      } else if (bal > 0.01) {
+        creditors.add({"name": rabbit, "bal": bal});
+      }
+    });
+
+    int dIdx = 0, cIdx = 0;
+    while (dIdx < debtors.length && cIdx < creditors.length) {
+      var d = debtors[dIdx];
+      var c = creditors[cIdx];
+      double executionAmount = min(d["bal"], c["bal"]);
+
+      computedDebts.add({
+        "from": d["name"],
+        "to": c["name"],
+        "amount": executionAmount,
+      });
+
+      d["bal"] -= executionAmount;
+      c["bal"] -= executionAmount;
+
+      if (d["bal"] < 0.01) dIdx++;
+      if (c["bal"] < 0.01) cIdx++;
+    }
+
+    setState(() {
+      isEntirelySettled = computedDebts.isEmpty;
+      sceneState = SceneState.summaryView;
+    });
+    _bookFlipController.forward(from: 0.0);
+  }
+
+  // 📜 POPUP DIARY NOTEBOOK WITH AUTOMATED DISNEY CHARACTER AWARDS
+  void _showRabbitStorybookAwardDialog(String name) {
+    double spent = totalSpendingPerRabbit[name] ?? 0.0;
+    double consumed = totalBenefitPerRabbit[name] ?? 0.0;
+    
+    String awardTitle = "🍃 Clever Forest Explorer";
+    String awardDesc = "You traveled along beautifully, keeping your coin purse perfectly balanced under the canopy shadows!";
+    String stickerEmoji = "🎒";
+
+    if (spent >= consumed && spent > 0) {
+      awardTitle = "🍯 The Kind Payer Award";
+      awardDesc = "Like Pooh sharing his honey pot, you protected your companions by settling the treasury bills down first!";
+      stickerEmoji = "🍯";
+    } else if (consumed > spent && consumed > 50) {
+      awardTitle = "🍖 Grand Duke of the Feast";
+      awardDesc = "You enjoyed the kingdom's bounty to the absolute fullest! A magnificent royal banquet champion!";
+      stickerEmoji = "🍖";
+    } else if (spent == 0 && consumed == 0) {
+      awardTitle = "🍃 Carefree Woodland Sprite";
+      awardDesc = "You simply danced through the woods this round without leaving any trace in the ledger diaries!";
+      stickerEmoji = "🍃";
+    } else if (consumed < 15 && consumed > 0) {
+      awardTitle = "🪙 The Wise Micro-Saver";
+      awardDesc = "Incredibly cautious with your treasure stash! You managed to claim maximum happiness for the least coins!";
+      stickerEmoji = "🪙";
+    }
+
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          backgroundColor: const Color(0xFFFDFBF7),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24), side: const BorderSide(color: Color(0xFFE6D5C3), width: 3)),
+          title: Row(
+            children: [
+              Text(stickerEmoji, style: const TextStyle(fontSize: 28)),
+              const SizedBox(width: 10),
+              Text("$name's Adventure Chapter", style: const TextStyle(fontFamily: "Caveat", fontSize: 24, fontWeight: FontWeight.bold)),
+            ],
+          ),
+          content: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(12),
+                decoration: BoxDecoration(color: const Color(0xFFF3EDE2), borderRadius: BorderRadius.circular(14)),
+                child: Column(
+                  children: [
+                    Text("Spent: ${spent.toStringAsFixed(2)} coins 🪙", style: const TextStyle(fontFamily: "Caveat", fontSize: 18, fontWeight: FontWeight.bold)),
+                    Text("Consumed: ${consumed.toStringAsFixed(2)} coins 🍽️", style: const TextStyle(fontFamily: "Caveat", fontSize: 18, fontWeight: FontWeight.bold)),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 16),
+              Center(
+                child: Text(awardTitle, style: const TextStyle(fontFamily: "Caveat", fontSize: 22, fontWeight: FontWeight.bold, color: Colors.purple)),
+              ),
+              const SizedBox(height: 6),
+              Text(
+                "\"$awardDesc\"",
+                textAlign: TextAlign.center,
+                style: const TextStyle(fontFamily: "Caveat", fontSize: 18, fontStyle: FontStyle.italic, color: Colors.black87),
+              ),
+            ],
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: const Text("Close Log 📜", style: TextStyle(fontFamily: "Caveat", fontSize: 18, fontWeight: FontWeight.bold, color: Colors.brown)),
+            )
+          ],
+        );
+      },
+    );
+  }
+
   Offset getPosition(int index, int total, double radius) {
     if (total <= 1) return Offset.zero;
     final angle = (2 * pi * index) / total;
@@ -517,11 +706,14 @@ class _ReceiptPageState extends State<ReceiptPage>
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: Text("${widget.groupName} 🐰 Receipt"),
+        title: Text(sceneState == SceneState.summaryView ? "📖 The Chronicles of Split" : "${widget.groupName} 🐰 Receipt"),
+        leading: sceneState == SceneState.summaryView 
+          ? IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.black87),
+              onPressed: () => setState(() => sceneState = SceneState.receiptOpened),
+            )
+          : null,
       ),
-      // ✅ SOLUTION STEP: Swapped Center for a fullscreen SizedBox.expand layout container.
-      // This forces the Stack layer grid to size itself to 100% of the screen window bounds,
-      // bringing back touch alignment coordinates for any offset rabbits outside the receipt boundary lines!
       body: SizedBox.expand(
         child: Stack(
           alignment: Alignment.center,
@@ -529,7 +721,7 @@ class _ReceiptPageState extends State<ReceiptPage>
             // ==========================================
             // LAYER 1: THE CRUMPLED BALL ICON (Background Layer)
             // ==========================================
-            if (showCircle && !showReceipt)
+            if (showCircle && sceneState != SceneState.summaryView && !showReceipt)
               Positioned.fill(
                 child: Align(
                   alignment: Alignment.center,
@@ -564,7 +756,7 @@ class _ReceiptPageState extends State<ReceiptPage>
             // ==========================================
             // LAYER 2: THE UNFOLDED RECEIPT SHEET (Middle Background Layer)
             // ==========================================
-            if (showReceipt)
+            if (showReceipt && sceneState != SceneState.summaryView)
               Transform.translate(
                 offset: widget.members.length <= 4 ? const Offset(110, 0) : const Offset(0, 0),
                 child: ScaleTransition(
@@ -757,9 +949,6 @@ class _ReceiptPageState extends State<ReceiptPage>
                                     setState(() {
                                       isSelectiveModeActive = !isSelectiveModeActive;
                                     });
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      SnackBar(content: Text(isSelectiveModeActive ? "Selective Ledger Enabled! Tap rabbits to add rows." : "Returned to Global Split Mode.")),
-                                    );
                                   },
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(vertical: 2),
@@ -777,11 +966,7 @@ class _ReceiptPageState extends State<ReceiptPage>
                                 right: 40,
                                 child: GestureDetector(
                                   behavior: HitTestBehavior.opaque,
-                                  onTap: () {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(content: Text("Expense Story Saved ✨")),
-                                    );
-                                  },
+                                  onTap: _executeSettlementMathematics,
                                   child: AnimatedOpacity(
                                     duration: const Duration(milliseconds: 600),
                                     opacity: showReceipt ? 1.0 : 0.0,
@@ -801,10 +986,9 @@ class _ReceiptPageState extends State<ReceiptPage>
             // ==========================================
             // LAYER 3: THE RABBIT WORKSPACE (Foreground Layer)
             // ==========================================
-            if (showCircle)
+            if (showCircle && sceneState != SceneState.summaryView)
               Positioned.fill(
                 child: IgnorePointer(
-                  // ✅ FIXING POINTER LOGIC: Hand touch vectors down perfectly only when Selective Split Mode is fully operational
                   ignoring: isSelectiveModeActive ? false : !showReceipt,
                   child: AnimatedBuilder(
                     animation: Listenable.merge([_circleController, _approachController, _unfoldController]),
@@ -918,7 +1102,6 @@ class _ReceiptPageState extends State<ReceiptPage>
                                       ),
                                     ],
                                   ),
-                                  // 🚨 OVERLAY INKWELL SIZED BOX: Completely covers the visual bounds of the rabbit vector frame
                                   Positioned.fill(
                                     child: GestureDetector(
                                       behavior: HitTestBehavior.opaque,
@@ -957,11 +1140,7 @@ class _ReceiptPageState extends State<ReceiptPage>
                                                 style: TextStyle(fontFamily: "Caveat", color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
                                               ),
                                               SizedBox(width: 4),
-                                              Icon(
-                                                Icons.pets,
-                                                color: Colors.white,
-                                                size: 14,
-                                              )
+                                              Icon(Icons.pets, color: Colors.white, size: 14)
                                             ],
                                           ),
                                         ),
@@ -974,6 +1153,196 @@ class _ReceiptPageState extends State<ReceiptPage>
                         }),
                       );
                     },
+                  ),
+                ),
+              ),
+
+            // ==========================================
+            // LAYER 4: THE ROYAL SUMMARY VIEW STORYBOOK CANVAS
+            // ==========================================
+            if (sceneState == SceneState.summaryView)
+              AnimatedBuilder(
+                animation: _bookFlipAnimation,
+                builder: (context, child) {
+                  return Transform(
+                    alignment: Alignment.center,
+                    transform: Matrix4.identity()
+                      ..setEntry(3, 2, 0.001)
+                      ..rotateY((1.0 - _bookFlipAnimation.value) * pi * 0.5),
+                    child: Opacity(
+                      opacity: _bookFlipAnimation.value,
+                      child: child,
+                    ),
+                  );
+                },
+                child: Container(
+                  width: min(MediaQuery.of(context).size.width * 0.92, 850),
+                  height: MediaQuery.of(context).size.height * 0.78,
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFFBF7F0),
+                    borderRadius: BorderRadius.circular(28),
+                    boxShadow: const [BoxShadow(color: Colors.black26, blurRadius: 30, offset: Offset(0, 15))],
+                    border: Border.all(color: const Color(0xFFE2D4C1), width: 6),
+                  ),
+                  child: Row(
+                    children: [
+                      // 📖 LEFT PAGE DIARY SHEET: LEDGER CALCULATOR STACKS
+                      Expanded(
+                        child: Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: const BoxDecoration(
+                            border: Border(right: BorderSide(color: Color(0xFFEADCC9), width: 2)),
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("📖 Royal Treasury Ledger", style: TextStyle(fontFamily: "Caveat", fontSize: 28, fontWeight: FontWeight.bold, color: Colors.brown)),
+                              const SizedBox(height: 4),
+                              const Text("The final coins matching pathways:", style: TextStyle(fontFamily: "Caveat", fontSize: 18, color: Colors.black54)),
+                              const Divider(height: 20, color: Color(0xFFEADCC9)),
+                              Expanded(
+                                child: isEntirelySettled 
+                                  ? Center(
+                                      child: Column(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Lottie.asset("assets/rabbits/Rabbit Kick Scooter.json", width: 120, height: 120),
+                                          const Text("[✓] All settled up!", style: TextStyle(fontFamily: "Caveat", fontSize: 24, fontWeight: FontWeight.bold, color: Colors.green)),
+                                          const Text("The forest balance is at peace 🍃", style: TextStyle(fontFamily: "Caveat", fontSize: 18, color: Colors.black54)),
+                                        ],
+                                      ),
+                                    )
+                                  : ListView.builder(
+                                      itemCount: computedDebts.length,
+                                      itemBuilder: (context, index) {
+                                        final debt = computedDebts[index];
+                                        return Card(
+                                          color: const Color(0xFFF5EDE0),
+                                          elevation: 0,
+                                          margin: const EdgeInsets.symmetric(vertical: 6),
+                                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                                          child: ListTile(
+                                            leading: const Icon(Icons.swap_horiz, color: Colors.brown),
+                                            title: Text(
+                                              "🐰 ${debt['from']} needs to give ${debt['amount'].toStringAsFixed(2)} coins to ${debt['to']} 🪙",
+                                              style: const TextStyle(fontFamily: "Caveat", fontSize: 18, fontWeight: FontWeight.bold),
+                                            ),
+                                            trailing: TextButton(
+                                              onPressed: () {
+                                                setState(() {
+                                                  computedDebts.removeAt(index);
+                                                  if (computedDebts.isEmpty) isEntirelySettled = true;
+                                                });
+                                              },
+                                              child: const Text("Settle 🐾", style: TextStyle(fontFamily: "Caveat", fontSize: 16, color: Colors.purple, fontWeight: FontWeight.bold)),
+                                            ),
+                                          ),
+                                        );
+                                      },
+                                    ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+
+                      // 📊 RIGHT PAGE DIARY SHEET: SAFE GRAPH COMPONENT VERTICALS
+                      Expanded(
+                        child: SingleChildScrollView(
+                          padding: const EdgeInsets.all(24),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text("📊 Magical Kingdom Analytics", style: TextStyle(fontFamily: "Caveat", fontSize: 26, fontWeight: FontWeight.bold, color: Colors.brown)),
+                              const SizedBox(height: 14),
+                              
+                              const Text("Who Spent The Most Coins? (Contribution Pillars)", style: TextStyle(fontFamily: "Caveat", fontSize: 16, color: Colors.black54)),
+                              const SizedBox(height: 8),
+                              
+                              // ==========================================
+                              // 📊 FIXED CONTRIBUTION PILLARS
+                              // ✅ RESOLVED: Increased layout frame container box height to 140
+                              // and scaled maximum potential element bar limits cleanly to 70 max.
+                              // ==========================================
+                              Container(
+                                height: 140, // 👈 Increased from 120
+                                padding: const EdgeInsets.symmetric(horizontal: 10),
+                                decoration: BoxDecoration(color: const Color(0xFFF3EDE2), borderRadius: BorderRadius.circular(14)),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                                  crossAxisAlignment: CrossAxisAlignment.end,
+                                  children: widget.members.map((m) {
+                                    double spent = totalSpendingPerRabbit[m] ?? 0.0;
+                                    double maxSpent = totalSpendingPerRabbit.values.fold(1.0, (maxV, v) => max(maxV, v));
+                                    // Math scaling safely capped at 70 to guarantee elements never break boundaries
+                                    double scaleHeight = spent == 0 ? 8 : (spent / maxSpent) * 70;
+                                    
+                                    return Column(
+                                      mainAxisAlignment: MainAxisAlignment.end,
+                                      mainAxisSize: MainAxisSize.max,
+                                      crossAxisAlignment: CrossAxisAlignment.center,
+                                      children: [
+                                        Flexible(
+                                          child: Text("${spent.toStringAsFixed(0)}🪙", style: const TextStyle(fontFamily: "Caveat", fontSize: 12)),
+                                        ),
+                                        const SizedBox(height: 2),
+                                        AnimatedContainer(
+                                          duration: const Duration(milliseconds: 800),
+                                          width: 24,
+                                          height: scaleHeight,
+                                          decoration: BoxDecoration(
+                                            color: Colors.purple.withOpacity(0.6),
+                                            borderRadius: const BorderRadius.vertical(top: Radius.circular(6)),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 4),
+                                        Flexible(
+                                          child: Text(m, style: const TextStyle(fontFamily: "Caveat", fontSize: 13, fontWeight: FontWeight.bold)),
+                                        ),
+                                      ],
+                                    );
+                                  }).toList(),
+                                ),
+                              ),
+                              
+                              const SizedBox(height: 20),
+                              const Divider(color: Color(0xFFEADCC9)),
+                              const SizedBox(height: 6),
+                              
+                              const Text("📜 Whispering Woods Awards", style: TextStyle(fontFamily: "Caveat", fontSize: 20, fontWeight: FontWeight.bold, color: Colors.brown)),
+                              const Text("Tap any companion avatar block to view diary logs:", style: TextStyle(fontFamily: "Caveat", fontSize: 15, color: Colors.black45)),
+                              const SizedBox(height: 10),
+                              Wrap(
+                                spacing: 8,
+                                runSpacing: 8,
+                                children: widget.members.map((m) {
+                                  return InkWell(
+                                    onTap: () => _showRabbitStorybookAwardDialog(m),
+                                    borderRadius: BorderRadius.circular(12),
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                                      decoration: BoxDecoration(
+                                        color: const Color(0xFFEADCC9).withOpacity(0.5),
+                                        borderRadius: BorderRadius.circular(12),
+                                        border: Border.all(color: const Color(0xFFEADCC9)),
+                                      ),
+                                      child: Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          const Icon(Icons.auto_stories_outlined, size: 16, color: Colors.brown),
+                                          const SizedBox(width: 6),
+                                          Text(m, style: const TextStyle(fontFamily: "Caveat", fontSize: 16, fontWeight: FontWeight.bold)),
+                                        ],
+                                      ),
+                                    ),
+                                  );
+                                }).toList(),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ),
               ),
