@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:lottie/lottie.dart';
 import 'package:video_player/video_player.dart';
 import 'package:audioplayers/audioplayers.dart';
+import 'package:google_fonts/google_fonts.dart'; // Ensure this is in pubspec
 import 'world_scene.dart';
 
 class WorldHome extends StatefulWidget {
@@ -79,90 +80,181 @@ class _WorldHomeState extends State<WorldHome> {
     final screenWidth = MediaQuery.of(context).size.width;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF3EEF5),
-      body: SafeArea(
-        child: Column(
-          children: [
-            const SizedBox(height: 20),
-            const Text(
-              "Rabbit Expense Worlds 🐰",
-              style: TextStyle(fontSize: 30, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 10),
-            const Text(
-              "Swipe to explore your expense adventure",
-              style: TextStyle(fontSize: 16, color: Colors.grey),
-            ),
-            const SizedBox(height: 30),
-            Expanded(
-              child: Stack(
-                children: [
-                  PageView.builder(
-                    controller: _controller,
-                    itemCount: worlds.length,
-                    physics: const BouncingScrollPhysics(),
-                    itemBuilder: (context, index) {
-                      return AnimatedBuilder(
-                        animation: _controller,
-                        builder: (context, child) {
-                          double value =
-                              (_controller.hasClients &&
-                                  _controller.position.haveDimensions)
-                              ? (_controller.page ?? 0) - index
-                              : (index == 0 ? 0 : 1);
-                          value = (1 - (value.abs() * 0.5)).clamp(0.6, 1.0);
-
-                          return Center(
-                            child: Transform(
-                              alignment: Alignment.center,
-                              transform: Matrix4.identity()
-                                ..setEntry(3, 2, 0.001)
-                                ..scale(value)
-                                ..rotateY((1 - value) * -0.6),
-                              child: Transform.translate(
-                                offset: Offset(0, value < 0.8 ? 20 : 0),
-                                child: Opacity(
-                                  opacity: value,
-                                  child: WorldCardItem(
-                                    world: worlds[index],
-                                    index: index,
-                                    currentPage: currentPage,
-                                  ),
-                                ),
-                              ),
-                            ),
-                          );
-                        },
-                      );
-                    },
-                  ),
-                  AnimatedPositioned(
-                    duration: const Duration(milliseconds: 250),
-                    curve: Curves.easeOut,
-                    bottom: 20,
-                    left:
-                        (currentPage / (worlds.length - 1)) *
-                        screenWidth *
-                        0.65,
-                    child: SizedBox(
-                      height: 140,
-                      width: 140,
-                      child: Lottie.asset(
-                        "assets/rabbits/Rabbit Kick Scooter.json",
-                        fit: BoxFit.contain,
-                        repeat: true,
-                      ),
-                    ),
-                  ),
-                ],
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(
+            Icons.arrow_back_ios_new,
+            color: Color(0xFF6A1B9A),
+          ), // Darker purple for visibility
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
+      body: Stack(
+        children: [
+          // 1. BACKGROUND GRADIENT (Matches Homepage)
+          Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFF3EEF5), Color(0xFFE1F5FE)],
               ),
             ),
-            const SizedBox(height: 30),
-          ],
-        ),
+          ),
+
+          // 2. MAGIC BUBBLES
+          Positioned(
+            top: 100,
+            left: -30,
+            child: _buildDecorationCircle(120, Colors.purple.withOpacity(0.08)),
+          ),
+          Positioned(
+            bottom: 100,
+            right: -40,
+            child: _buildDecorationCircle(150, Colors.blue.withOpacity(0.05)),
+          ),
+
+          // 3. MAIN CONTENT
+          SafeArea(
+            child: Column(
+              children: [
+                const SizedBox(height: 20),
+                // Simple Header Text (No more Castle Container)
+                Text(
+                  "Rabbit Expense Worlds 🐰",
+                  style: GoogleFonts.fredoka(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF4A148C),
+                  ),
+                ),
+                const SizedBox(height: 5),
+                Text(
+                  "Swipe to explore your adventure",
+                  style: GoogleFonts.fredoka(
+                    fontSize: 15,
+                    color: Colors.purple.withOpacity(0.5),
+                  ),
+                ),
+
+                const SizedBox(height: 20), // Small gap before cards
+
+                Expanded(
+                  child: Stack(
+                    children: [
+                      PageView.builder(
+                        controller: _controller,
+                        itemCount: worlds.length,
+                        physics: const BouncingScrollPhysics(),
+                        itemBuilder: (context, index) {
+                          return AnimatedBuilder(
+                            animation: _controller,
+                            builder: (context, child) {
+                              double value =
+                                  (_controller.hasClients &&
+                                      _controller.position.haveDimensions)
+                                  ? (_controller.page ?? 0) - index
+                                  : (index == 0 ? 0 : 1);
+
+                              // Adjusted clamp to ensure cards have more height
+                              value = (1 - (value.abs() * 0.4)).clamp(0.7, 1.0);
+
+                              return Center(
+                                child: Transform(
+                                  alignment: Alignment.center,
+                                  transform: Matrix4.identity()
+                                    ..setEntry(3, 2, 0.001)
+                                    ..scale(value)
+                                    ..rotateY((1 - value) * -0.5),
+                                  child: Opacity(
+                                    opacity: value,
+                                    child: WorldCardItem(
+                                      world: worlds[index],
+                                      index: index,
+                                      currentPage: currentPage,
+                                    ),
+                                  ),
+                                ),
+                              );
+                            },
+                          );
+                        },
+                      ),
+
+                      // SCOOTER RABBIT (Animated position based on page)
+                      AnimatedPositioned(
+                        duration: const Duration(milliseconds: 250),
+                        curve: Curves.easeOut,
+                        bottom: 10,
+                        left:
+                            (currentPage / (worlds.length - 1)) *
+                            screenWidth *
+                            0.65,
+                        child: SizedBox(
+                          height: 110,
+                          width: 110,
+                          child: Lottie.asset(
+                            "assets/rabbits/Rabbit Kick Scooter.json",
+                            fit: BoxFit.contain,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 20), // Bottom padding
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }
+
+  Widget _buildDecorationCircle(double size, Color color) {
+    return Container(
+      width: size,
+      height: size,
+      decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+    );
+  }
+}
+
+// --- WAVE CLIPPER CLASS ---
+class WaveClipper extends CustomClipper<Path> {
+  @override
+  Path getClip(Size size) {
+    var path = Path();
+    path.lineTo(0, size.height - 40);
+    var firstControlPoint = Offset(size.width / 4, size.height);
+    var firstEndPoint = Offset(size.width / 2.25, size.height - 30);
+    path.quadraticBezierTo(
+      firstControlPoint.dx,
+      firstControlPoint.dy,
+      firstEndPoint.dx,
+      firstEndPoint.dy,
+    );
+    var secondControlPoint = Offset(
+      size.width - (size.width / 3.25),
+      size.height - 65,
+    );
+    var secondEndPoint = Offset(size.width, size.height - 40);
+    path.quadraticBezierTo(
+      secondControlPoint.dx,
+      secondControlPoint.dy,
+      secondEndPoint.dx,
+      secondEndPoint.dy,
+    );
+    path.lineTo(size.width, 0);
+    path.close();
+    return path;
+  }
+
+  @override
+  bool shouldReclip(CustomClipper<Path> oldClipper) => false;
 }
 
 class WorldCardItem extends StatefulWidget {

@@ -877,7 +877,7 @@ class _ReceiptPageState extends State<ReceiptPage>
     final diaryBookHeight = MediaQuery.of(context).size.height * 0.80;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF6F1F8),
+      extendBodyBehindAppBar: true, // Allow gradient under the status bar
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -897,588 +897,470 @@ class _ReceiptPageState extends State<ReceiptPage>
               )
             : null,
       ),
-      body: SizedBox.expand(
-        child: Stack(
-          alignment: Alignment.center,
-          children: [
-            // ==========================================
-            // LAYER 1: THE CRUMPLED BALL ICON (Background Layer)
-            // ==========================================
-            if (showCircle &&
-                sceneState != SceneState.summaryView &&
-                !showReceipt)
-              Positioned.fill(
-                child: Align(
-                  alignment: Alignment.center,
-                  child: GestureDetector(
-                    behavior: HitTestBehavior.translucent,
-                    onTap: sceneState == SceneState.receiptReady
-                        ? openReceipt
-                        : startSceneFlow,
-                    child: AnimatedBuilder(
-                      animation: _floatingController,
-                      builder: (context, child) {
-                        return Transform.translate(
-                          offset: Offset(0, _floatingMove.value),
-                          child: Transform.rotate(
-                            angle: _floatingRotate.value,
-                            child: Transform.scale(
-                              scale: _floatingScale.value,
-                              child: Stack(
-                                alignment: Alignment.center,
-                                children: [
-                                  Image.asset(
-                                    "assets/images/crumpled_ball.png",
-                                    width: 165,
-                                    height: 165,
+ body: Stack(
+        children: [
+          Positioned.fill(
+            child: Container(
+              decoration: const BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                  colors: [Color(0xFFF3EEF5), Color(0xFFE1F5FE)],
+                ),
+              ),
+            ),
+          ),
+          Positioned.fill(
+            child: Stack(
+              alignment: Alignment.center,
+              children: [
+                if (showCircle &&
+                    sceneState != SceneState.summaryView &&
+                    !showReceipt)
+                  Positioned.fill(
+                    child: Align(
+                      alignment: Alignment.center,
+                      child: GestureDetector(
+                        behavior: HitTestBehavior.translucent,
+                        onTap: sceneState == SceneState.receiptReady
+                            ? openReceipt
+                            : startSceneFlow,
+                        child: AnimatedBuilder(
+                          animation: _floatingController,
+                          builder: (context, child) {
+                            return Transform.translate(
+                              offset: Offset(0, _floatingMove.value),
+                              child: Transform.rotate(
+                                angle: _floatingRotate.value,
+                                child: Transform.scale(
+                                  scale: _floatingScale.value,
+                                  child: Stack(
+                                    alignment: Alignment.center,
+                                    children: [
+                                      Image.asset(
+                                        "assets/images/crumpled_ball.png",
+                                        width: 165,
+                                        height: 165,
+                                      ),
+                                      Opacity(
+                                        opacity: _iconGlow.value,
+                                        child: const Icon(
+                                          Icons.touch_app,
+                                          size: 40,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  Opacity(
-                                    opacity: _iconGlow.value,
-                                    child: const Icon(
-                                      Icons.touch_app,
-                                      size: 40,
+                                ),
+                              ),
+                            );
+                          },
+                        ),
+                      ),
+                    ),
+                  ),
+                if (showReceipt && sceneState != SceneState.summaryView)
+                  Transform.translate(
+                    offset: widget.members.length <= 4
+                        ? const Offset(110, 0)
+                        : const Offset(0, 0),
+                    child: ScaleTransition(
+                      scale: animation,
+                      child: AnimatedBuilder(
+                        animation: _unfoldController,
+                        builder: (context, child) {
+                          return Opacity(
+                            opacity: _fadeAnim.value.clamp(0.0, 1.0),
+                            child: Transform(
+                              alignment: Alignment.center,
+                              transform: Matrix4.identity()
+                                ..rotateZ(_rotateAnim.value)
+                                ..scale(_scaleAnim.value)
+                                ..translate(0.0, 10.0 * (1 - _fadeAnim.value)),
+                              child: child,
+                            ),
+                          );
+                        },
+                        child: Container(
+                          width: 330,
+                          height: 620,
+                          margin: const EdgeInsets.all(18),
+                          decoration: BoxDecoration(
+                            borderRadius: BorderRadius.circular(24),
+                            boxShadow: const [
+                              BoxShadow(
+                                blurRadius: 25,
+                                color: Colors.black26,
+                                offset: Offset(0, 12),
+                              ),
+                            ],
+                          ),
+                          child: ClipRRect(
+                            borderRadius: BorderRadius.circular(24),
+                            child: SizedBox(
+                              width: 330,
+                              height: 620,
+                              child: Stack(
+                                children: [
+                                  Positioned.fill(
+                                    child: Image.asset(
+                                      "assets/images/receipt.jpg",
+                                      fit: BoxFit.cover,
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 120,
+                                    left: 40,
+                                    right: 40,
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () {
+                                        if (!isSelectiveModeActive)
+                                          _edit(descriptionController);
+                                      },
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            "Item Label:",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black45,
+                                              fontFamily: "Caveat",
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          AnimatedOpacity(
+                                            duration: const Duration(
+                                                milliseconds: 600),
+                                            opacity: showReceipt ? 1.0 : 0.0,
+                                            child: InkText(
+                                              isSelectiveModeActive
+                                                  ? "Selective Tracking Active"
+                                                  : (descriptionController
+                                                          .text.isEmpty
+                                                      ? "Tap to write..."
+                                                      : descriptionController
+                                                          .text),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 200,
+                                    left: 40,
+                                    right: 40,
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () {
+                                        if (!isSelectiveModeActive)
+                                          _edit(amountController);
+                                      },
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            "Total Due:",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black45,
+                                              fontFamily: "Caveat",
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          AnimatedOpacity(
+                                            duration: const Duration(
+                                                milliseconds: 600),
+                                            opacity: showReceipt ? 1.0 : 0.0,
+                                            child: InkText(
+                                              isSelectiveModeActive
+                                                  ? "Multi-Ledger Calculated"
+                                                  : (amountController
+                                                          .text.isEmpty
+                                                      ? "0.00"
+                                                      : amountController.text),
+                                              style: const TextStyle(
+                                                fontFamily: "Caveat",
+                                                fontSize: 24,
+                                                fontWeight: FontWeight.bold,
+                                                color: Colors.black87,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 280,
+                                    left: 40,
+                                    right: 40,
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () {
+                                        if (!isSelectiveModeActive)
+                                          _showPayerSelectionDialog();
+                                      },
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          const Text(
+                                            "Settled By:",
+                                            style: TextStyle(
+                                              fontSize: 14,
+                                              fontWeight: FontWeight.bold,
+                                              color: Colors.black45,
+                                              fontFamily: "Caveat",
+                                            ),
+                                          ),
+                                          const SizedBox(height: 2),
+                                          AnimatedOpacity(
+                                            duration: const Duration(
+                                                milliseconds: 600),
+                                            opacity: showReceipt ? 1.0 : 0.0,
+                                            child: InkText(
+                                              isSelectiveModeActive
+                                                  ? "Tap Rabbits Individually"
+                                                  : (selectedPayer ??
+                                                      "Who paid? ✎"),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    top: 360,
+                                    left: 40,
+                                    right: 40,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        const Text(
+                                          "Split Contribution Workspace:",
+                                          style: TextStyle(
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                            color: Colors.black45,
+                                            fontFamily: "Caveat",
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        AnimatedOpacity(
+                                          duration: const Duration(
+                                              milliseconds: 600),
+                                          opacity: showReceipt ? 1.0 : 0.0,
+                                          child: isSelectiveModeActive
+                                              ? const Text(
+                                                  "✨ Selective Mode Active! Tap rabbits outside to append rows.",
+                                                  style: TextStyle(
+                                                    fontFamily: "Caveat",
+                                                    fontSize: 16,
+                                                    color: Colors.purple,
+                                                    fontWeight: FontWeight.bold,
+                                                  ),
+                                                )
+                                              : Wrap(
+                                                  spacing: 8,
+                                                  runSpacing: 4,
+                                                  children: widget.members
+                                                      .map((member) {
+                                                    final isSelected =
+                                                        selectedMembers
+                                                            .contains(member);
+                                                    return GestureDetector(
+                                                      onTap: () =>
+                                                          toggleMember(member),
+                                                      child: Text(
+                                                        isSelected
+                                                            ? "[✓] $member"
+                                                            : "[ ] $member",
+                                                        style: TextStyle(
+                                                          fontFamily: "Caveat",
+                                                          fontSize: 18,
+                                                          fontWeight: isSelected
+                                                              ? FontWeight.bold
+                                                              : FontWeight
+                                                                  .normal,
+                                                          color: isSelected
+                                                              ? Colors.black87
+                                                              : Colors.black45,
+                                                          decoration: isSelected
+                                                              ? TextDecoration
+                                                                  .none
+                                                              : TextDecoration
+                                                                  .lineThrough,
+                                                        ),
+                                                      ),
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 165,
+                                    left: 40,
+                                    right: 40,
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        GestureDetector(
+                                          behavior: HitTestBehavior.opaque,
+                                          onTap: pickImage,
+                                          child: AnimatedOpacity(
+                                            duration: const Duration(
+                                                milliseconds: 600),
+                                            opacity: showReceipt ? 1.0 : 0.0,
+                                            child: InkText(
+                                              (kIsWeb
+                                                      ? webImageBlobPath == null
+                                                      : uploadedImage == null)
+                                                  ? "Attach receipt ✎"
+                                                  : "✓ receipt attached",
+                                              style: const TextStyle(
+                                                fontFamily: "Caveat",
+                                                fontSize: 18,
+                                                color: Colors.black87,
+                                                decoration:
+                                                    TextDecoration.underline,
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                        if (kIsWeb
+                                            ? webImageBlobPath != null
+                                            : uploadedImage != null) ...[
+                                          const SizedBox(height: 6),
+                                          Container(
+                                            height: 40,
+                                            width: 100,
+                                            decoration: BoxDecoration(
+                                              borderRadius:
+                                                  BorderRadius.circular(6),
+                                              image: kIsWeb
+                                                  ? DecorationImage(
+                                                      image: NetworkImage(
+                                                          webImageBlobPath!),
+                                                      fit: BoxFit.cover,
+                                                    )
+                                                  : DecorationImage(
+                                                      image: FileImage(
+                                                          uploadedImage!),
+                                                      fit: BoxFit.cover,
+                                                    ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 132,
+                                    left: 40,
+                                    right: 40,
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: () {
+                                        setState(() {
+                                          isSelectiveModeActive =
+                                              !isSelectiveModeActive;
+                                        });
+                                      },
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                            vertical: 2),
+                                        alignment: Alignment.centerLeft,
+                                        child: Text(
+                                          isSelectiveModeActive
+                                              ? "✓ Selective Mode Enabled"
+                                              : "➔ Switch to Selective Ledger 🎨",
+                                          style: TextStyle(
+                                            fontFamily: "Caveat",
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: isSelectiveModeActive
+                                                ? Colors.purple
+                                                : Colors.black54,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
+                                  Positioned(
+                                    bottom: 60,
+                                    right: 40,
+                                    child: GestureDetector(
+                                      behavior: HitTestBehavior.opaque,
+                                      onTap: _executeSettlementMathematics,
+                                      child: AnimatedOpacity(
+                                        duration:
+                                            const Duration(milliseconds: 600),
+                                        opacity: showReceipt ? 1.0 : 0.0,
+                                        child: const Text(
+                                          "Save →",
+                                          style: TextStyle(
+                                            fontSize: 22,
+                                            fontWeight: FontWeight.bold,
+                                            fontFamily: "Caveat",
+                                            color: Colors.black87,
+                                          ),
+                                        ),
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
                             ),
                           ),
-                        );
-                      },
-                    ),
-                  ),
-                ),
-              ),
-
-            // ==========================================
-            // LAYER 2: THE UNFOLDED RECEIPT SHEET (Middle Background Layer)
-            // ==========================================
-            if (showReceipt && sceneState != SceneState.summaryView)
-              Transform.translate(
-                offset: widget.members.length <= 4
-                    ? const Offset(110, 0)
-                    : const Offset(0, 0),
-                child: ScaleTransition(
-                  scale: animation,
-                  child: AnimatedBuilder(
-                    animation: _unfoldController,
-                    builder: (context, child) {
-                      return Opacity(
-                        opacity: _fadeAnim.value.clamp(0.0, 1.0),
-                        child: Transform(
-                          alignment: Alignment.center,
-                          transform: Matrix4.identity()
-                            ..rotateZ(_rotateAnim.value)
-                            ..scale(_scaleAnim.value)
-                            ..translate(0.0, 10.0 * (1 - _fadeAnim.value)),
-                          child: child,
-                        ),
-                      );
-                    },
-                    child: Container(
-                      width: 330,
-                      height: 620,
-                      margin: const EdgeInsets.all(18),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: const [
-                          BoxShadow(
-                            blurRadius: 25,
-                            color: Colors.black26,
-                            offset: Offset(0, 12),
-                          ),
-                        ],
-                      ),
-                      child: ClipRRect(
-                        borderRadius: BorderRadius.circular(24),
-                        child: SizedBox(
-                          width: 330,
-                          height: 620,
-                          child: Stack(
-                            children: [
-                              Positioned.fill(
-                                child: Image.asset(
-                                  "assets/images/receipt.jpg",
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
-
-                              Positioned(
-                                top: 120,
-                                left: 40,
-                                right: 40,
-                                child: GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: () {
-                                    if (!isSelectiveModeActive)
-                                      _edit(descriptionController);
-                                  },
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        "Item Label:",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black45,
-                                          fontFamily: "Caveat",
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      AnimatedOpacity(
-                                        duration: const Duration(
-                                          milliseconds: 600,
-                                        ),
-                                        opacity: showReceipt ? 1.0 : 0.0,
-                                        child: InkText(
-                                          isSelectiveModeActive
-                                              ? "Selective Tracking Active"
-                                              : (descriptionController
-                                                        .text
-                                                        .isEmpty
-                                                    ? "Tap to write..."
-                                                    : descriptionController
-                                                          .text),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-
-                              Positioned(
-                                top: 200,
-                                left: 40,
-                                right: 40,
-                                child: GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: () {
-                                    if (!isSelectiveModeActive)
-                                      _edit(amountController);
-                                  },
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        "Total Due:",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black45,
-                                          fontFamily: "Caveat",
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      AnimatedOpacity(
-                                        duration: const Duration(
-                                          milliseconds: 600,
-                                        ),
-                                        opacity: showReceipt ? 1.0 : 0.0,
-                                        child: InkText(
-                                          isSelectiveModeActive
-                                              ? "Multi-Ledger Calculated"
-                                              : (amountController.text.isEmpty
-                                                    ? "0.00"
-                                                    : amountController.text),
-                                          style: const TextStyle(
-                                            fontFamily: "Caveat",
-                                            fontSize: 24,
-                                            fontWeight: FontWeight.bold,
-                                            color: Colors.black87,
-                                          ),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-
-                              Positioned(
-                                top: 280,
-                                left: 40,
-                                right: 40,
-                                child: GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: () {
-                                    if (!isSelectiveModeActive)
-                                      _showPayerSelectionDialog();
-                                  },
-                                  child: Column(
-                                    crossAxisAlignment:
-                                        CrossAxisAlignment.start,
-                                    children: [
-                                      const Text(
-                                        "Settled By:",
-                                        style: TextStyle(
-                                          fontSize: 14,
-                                          fontWeight: FontWeight.bold,
-                                          color: Colors.black45,
-                                          fontFamily: "Caveat",
-                                        ),
-                                      ),
-                                      const SizedBox(height: 2),
-                                      AnimatedOpacity(
-                                        duration: const Duration(
-                                          milliseconds: 600,
-                                        ),
-                                        opacity: showReceipt ? 1.0 : 0.0,
-                                        child: InkText(
-                                          isSelectiveModeActive
-                                              ? "Tap Rabbits Individually"
-                                              : (selectedPayer ??
-                                                    "Who paid? ✎"),
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-
-                              Positioned(
-                                top: 360,
-                                left: 40,
-                                right: 40,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Text(
-                                      "Split Contribution Workspace:",
-                                      style: TextStyle(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.bold,
-                                        color: Colors.black45,
-                                        fontFamily: "Caveat",
-                                      ),
-                                    ),
-                                    const SizedBox(height: 6),
-                                    AnimatedOpacity(
-                                      duration: const Duration(
-                                        milliseconds: 600,
-                                      ),
-                                      opacity: showReceipt ? 1.0 : 0.0,
-                                      child: isSelectiveModeActive
-                                          ? const Text(
-                                              "✨ Selective Mode Active! Tap rabbits outside to append rows.",
-                                              style: TextStyle(
-                                                fontFamily: "Caveat",
-                                                fontSize: 16,
-                                                color: Colors.purple,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            )
-                                          : Wrap(
-                                              spacing: 8,
-                                              runSpacing: 4,
-                                              children: widget.members.map((
-                                                member,
-                                              ) {
-                                                final isSelected =
-                                                    selectedMembers.contains(
-                                                      member,
-                                                    );
-                                                return GestureDetector(
-                                                  onTap: () =>
-                                                      toggleMember(member),
-                                                  child: Text(
-                                                    isSelected
-                                                        ? "[✓] $member"
-                                                        : "[ ] $member",
-                                                    style: TextStyle(
-                                                      fontFamily: "Caveat",
-                                                      fontSize: 18,
-                                                      fontWeight: isSelected
-                                                          ? FontWeight.bold
-                                                          : FontWeight.normal,
-                                                      color: isSelected
-                                                          ? Colors.black87
-                                                          : Colors.black45,
-                                                      decoration: isSelected
-                                                          ? TextDecoration.none
-                                                          : TextDecoration
-                                                                .lineThrough,
-                                                    ),
-                                                  ),
-                                                );
-                                              }).toList(),
-                                            ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-
-                              Positioned(
-                                bottom: 165,
-                                left: 40,
-                                right: 40,
-                                child: Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: pickImage,
-                                      child: AnimatedOpacity(
-                                        duration: const Duration(
-                                          milliseconds: 600,
-                                        ),
-                                        opacity: showReceipt ? 1.0 : 0.0,
-                                        child: InkText(
-                                          (kIsWeb
-                                                  ? webImageBlobPath == null
-                                                  : uploadedImage == null)
-                                              ? "Attach receipt ✎"
-                                              : "✓ receipt attached",
-                                          style: const TextStyle(
-                                            fontFamily: "Caveat",
-                                            fontSize: 18,
-                                            color: Colors.black87,
-                                            decoration:
-                                                TextDecoration.underline,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    if (kIsWeb
-                                        ? webImageBlobPath != null
-                                        : uploadedImage != null) ...[
-                                      const SizedBox(height: 6),
-                                      Container(
-                                        height: 40,
-                                        width: 100,
-                                        decoration: BoxDecoration(
-                                          borderRadius: BorderRadius.circular(
-                                            6,
-                                          ),
-                                          image: kIsWeb
-                                              ? DecorationImage(
-                                                  image: NetworkImage(
-                                                    webImageBlobPath!,
-                                                  ),
-                                                  fit: BoxFit.cover,
-                                                )
-                                              : DecorationImage(
-                                                  image: FileImage(
-                                                    uploadedImage!,
-                                                  ),
-                                                  fit: BoxFit.cover,
-                                                ),
-                                        ),
-                                      ),
-                                    ],
-                                  ],
-                                ),
-                              ),
-
-                              Positioned(
-                                bottom: 132,
-                                left: 40,
-                                right: 40,
-                                child: GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: () {
-                                    setState(() {
-                                      isSelectiveModeActive =
-                                          !isSelectiveModeActive;
-                                    });
-                                  },
-                                  child: Container(
-                                    padding: const EdgeInsets.symmetric(
-                                      vertical: 2,
-                                    ),
-                                    alignment: Alignment.centerLeft,
-                                    child: Text(
-                                      isSelectiveModeActive
-                                          ? "✓ Selective Mode Enabled"
-                                          : "➔ Switch to Selective Ledger 🎨",
-                                      style: TextStyle(
-                                        fontFamily: "Caveat",
-                                        fontSize: 18,
-                                        fontWeight: FontWeight.bold,
-                                        color: isSelectiveModeActive
-                                            ? Colors.purple
-                                            : Colors.black54,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-
-                              Positioned(
-                                bottom: 60,
-                                right: 40,
-                                child: GestureDetector(
-                                  behavior: HitTestBehavior.opaque,
-                                  onTap: _executeSettlementMathematics,
-                                  child: AnimatedOpacity(
-                                    duration: const Duration(milliseconds: 600),
-                                    opacity: showReceipt ? 1.0 : 0.0,
-                                    child: const Text(
-                                      "Save →",
-                                      style: TextStyle(
-                                        fontSize: 22,
-                                        fontWeight: FontWeight.bold,
-                                        fontFamily: "Caveat",
-                                        color: Colors.black87,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ),
                         ),
                       ),
                     ),
                   ),
-                ),
-              ),
-
-            // ==========================================
-            // LAYER 3: THE RABBIT WORKSPACE (Foreground Layer)
-            // ==========================================
-            if (showCircle && sceneState != SceneState.summaryView)
-              Positioned.fill(
-                child: IgnorePointer(
-                  ignoring: isSelectiveModeActive ? false : !showReceipt,
-                  child: AnimatedBuilder(
-                    animation: Listenable.merge([
-                      _circleController,
-                      _approachController,
-                      _unfoldController,
-                    ]),
-                    builder: (context, child) {
-                      approachProgress = _approachController.value;
-                      return Stack(
-                        alignment: Alignment.center,
-                        children: List.generate(widget.members.length, (i) {
-                          final animatedRadius = lerpDouble(
-                            155,
-                            widget.members.length <= 4 ? 420 : 360,
-                            _unfoldController.value,
-                          )!;
-
-                          Offset base = getPosition(
-                            i,
-                            widget.members.length,
-                            animatedRadius,
-                          );
-
-                          if (sceneState == SceneState.receiptOpened) {
-                            final int totalCount = widget.members.length;
-                            final double radius = totalCount <= 4
-                                ? 260.0
-                                : 300.0;
-                            if (totalCount <= 4) {
-                              final double startAngle = pi * 0.7;
-                              final double endAngle = pi * 1.3;
-                              final double angleStep = totalCount <= 1
-                                  ? 0.0
-                                  : (endAngle - startAngle) / (totalCount - 1);
-                              base = Offset(
-                                const Offset(-170, 0).dx +
-                                    radius * cos(startAngle + (i * angleStep)),
-                                const Offset(-170, 0).dy +
-                                    radius * sin(startAngle + (i * angleStep)),
-                              );
-                            } else {
-                              final int leftSideCount = (totalCount / 2).ceil();
-                              if (i < leftSideCount) {
-                                final double startAngle = pi * 0.7;
-                                final double endAngle = pi * 1.3;
-                                final double angleStep = leftSideCount <= 1
-                                    ? 0.0
-                                    : (endAngle - startAngle) /
-                                          (leftSideCount - 1);
-                                base = Offset(
-                                  const Offset(-170, 0).dx +
-                                      radius *
-                                          cos(startAngle + (i * angleStep)),
-                                  const Offset(-170, 0).dy +
-                                      radius *
-                                          sin(startAngle + (i * angleStep)),
-                                );
-                              } else {
-                                final int rightSideIndex = i - leftSideCount;
-                                final int rightSideCount =
-                                    totalCount - leftSideCount;
-                                final double startAngle = -pi * 0.3;
-                                final double endAngle = pi * 0.3;
-                                final double angleStep = rightSideCount <= 1
-                                    ? 0.0
-                                    : (endAngle - startAngle) /
-                                          (rightSideCount - 1);
-                                base = Offset(
-                                  const Offset(170, 0).dx +
-                                      radius *
-                                          cos(
-                                            startAngle +
-                                                (rightSideIndex * angleStep),
-                                          ),
-                                  const Offset(170, 0).dy +
-                                      radius *
-                                          sin(
-                                            startAngle +
-                                                (rightSideIndex * angleStep),
-                                          ),
-                                );
-                              }
-                            }
-                          } else {
-                            if (sceneState == SceneState.leaderApproaching &&
-                                i == leaderIndex) {
-                              base = Offset.lerp(
-                                base,
-                                const Offset(0, 40),
-                                approachProgress,
+                if (showCircle && sceneState != SceneState.summaryView)
+                  Positioned.fill(
+                    child: IgnorePointer(
+                      ignoring: isSelectiveModeActive ? false : !showReceipt,
+                      child: AnimatedBuilder(
+                        animation: Listenable.merge([
+                          _circleController,
+                          _approachController,
+                          _unfoldController,
+                        ]),
+                        builder: (context, child) {
+                          approachProgress = _approachController.value;
+                          return Stack(
+                            alignment: Alignment.center,
+                            children:
+                                List.generate(widget.members.length, (i) {
+                              final animatedRadius = lerpDouble(
+                                155,
+                                widget.members.length <= 4 ? 420 : 360,
+                                _unfoldController.value,
                               )!;
-                            } else if (sceneState == SceneState.groupArriving) {
-                              if (i == leaderIndex) {
-                                base = const Offset(0, 40);
-                              } else {
-                                final delay = (i - 1) * 0.12;
-                                final t =
-                                    ((approachProgress - delay) / (1 - delay))
-                                        .clamp(0.0, 1.0);
-                                base = Offset.lerp(
-                                  base,
-                                  Offset(base.dx * 0.45, base.dy * 0.45),
-                                  t,
-                                )!;
-                              }
-                            } else if (sceneState ==
-                                    SceneState.semicircleFormed ||
-                                sceneState == SceneState.receiptReady) {
-                              final int totalCount = widget.members.length;
-                              final double radius = totalCount <= 4
-                                  ? 260.0
-                                  : 300.0;
-                              if (totalCount <= 4) {
-                                final double startAngle = pi * 0.7;
-                                final double endAngle = pi * 1.3;
-                                final double angleStep = totalCount <= 1
-                                    ? 0.0
-                                    : (endAngle - startAngle) /
-                                          (totalCount - 1);
-                                base = Offset(
-                                  const Offset(-170, 0).dx +
-                                      radius *
-                                          cos(startAngle + (i * angleStep)),
-                                  const Offset(-170, 0).dy +
-                                      radius *
-                                          sin(startAngle + (i * angleStep)),
-                                );
-                              } else {
-                                final int leftSideCount = (totalCount / 2)
-                                    .ceil();
-                                if (i < leftSideCount) {
+                              Offset base = getPosition(
+                                  i, widget.members.length, animatedRadius);
+                              if (sceneState == SceneState.receiptOpened) {
+                                final int totalCount = widget.members.length;
+                                final double radius =
+                                    totalCount <= 4 ? 260.0 : 300.0;
+                                if (totalCount <= 4) {
                                   final double startAngle = pi * 0.7;
                                   final double endAngle = pi * 1.3;
-                                  final double angleStep = leftSideCount <= 1
+                                  final double angleStep = totalCount <= 1
                                       ? 0.0
                                       : (endAngle - startAngle) /
-                                            (leftSideCount - 1);
+                                          (totalCount - 1);
                                   base = Offset(
                                     const Offset(-170, 0).dx +
                                         radius *
@@ -1488,399 +1370,483 @@ class _ReceiptPageState extends State<ReceiptPage>
                                             sin(startAngle + (i * angleStep)),
                                   );
                                 } else {
-                                  final int rightSideIndex = i - leftSideCount;
-                                  final int rightSideCount =
-                                      totalCount - leftSideCount;
-                                  final double startAngle = -pi * 0.3;
-                                  final double endAngle = pi * 0.3;
-                                  final double angleStep = rightSideCount <= 1
-                                      ? 0.0
-                                      : (endAngle - startAngle) /
+                                  final int leftSideCount =
+                                      (totalCount / 2).ceil();
+                                  if (i < leftSideCount) {
+                                    final double startAngle = pi * 0.7;
+                                    final double endAngle = pi * 1.3;
+                                    final double angleStep = leftSideCount <= 1
+                                        ? 0.0
+                                        : (endAngle - startAngle) /
+                                            (leftSideCount - 1);
+                                    base = Offset(
+                                      const Offset(-170, 0).dx +
+                                          radius *
+                                              cos(
+                                                  startAngle + (i * angleStep)),
+                                      const Offset(-170, 0).dy +
+                                          radius *
+                                              sin(
+                                                  startAngle + (i * angleStep)),
+                                    );
+                                  } else {
+                                    final int rightSideIndex = i - leftSideCount;
+                                    final int rightSideCount =
+                                        totalCount - leftSideCount;
+                                    final double startAngle = -pi * 0.3;
+                                    final double endAngle = pi * 0.3;
+                                    final double angleStep = rightSideCount <= 1
+                                        ? 0.0
+                                        : (endAngle - startAngle) /
                                             (rightSideCount - 1);
-                                  base = Offset(
-                                    const Offset(170, 0).dx +
-                                        radius *
-                                            cos(
-                                              startAngle +
-                                                  (rightSideIndex * angleStep),
-                                            ),
-                                    const Offset(170, 0).dy +
-                                        radius *
-                                            sin(
-                                              startAngle +
-                                                  (rightSideIndex * angleStep),
-                                            ),
-                                  );
+                                    base = Offset(
+                                      const Offset(170, 0).dx +
+                                          radius *
+                                              cos(startAngle +
+                                                  (rightSideIndex * angleStep)),
+                                      const Offset(170, 0).dy +
+                                          radius *
+                                              sin(startAngle +
+                                                  (rightSideIndex * angleStep)),
+                                    );
+                                  }
+                                }
+                              } else {
+                                if (sceneState ==
+                                        SceneState.leaderApproaching &&
+                                    i == leaderIndex) {
+                                  base = Offset.lerp(base,
+                                      const Offset(0, 40), approachProgress)!;
+                                } else if (sceneState ==
+                                    SceneState.groupArriving) {
+                                  if (i == leaderIndex) {
+                                    base = const Offset(0, 40);
+                                  } else {
+                                    final delay = (i - 1) * 0.12;
+                                    final t =
+                                        ((approachProgress - delay) / (1 - delay))
+                                            .clamp(0.0, 1.0);
+                                    base = Offset.lerp(
+                                        base,
+                                        Offset(base.dx * 0.45,
+                                            base.dy * 0.45),
+                                        t)!;
+                                  }
+                                } else if (sceneState ==
+                                        SceneState.semicircleFormed ||
+                                    sceneState == SceneState.receiptReady) {
+                                  final int totalCount = widget.members.length;
+                                  final double radius =
+                                      totalCount <= 4 ? 260.0 : 300.0;
+                                  if (totalCount <= 4) {
+                                    final double startAngle = pi * 0.7;
+                                    final double endAngle = pi * 1.3;
+                                    final double angleStep = totalCount <= 1
+                                        ? 0.0
+                                        : (endAngle - startAngle) /
+                                            (totalCount - 1);
+                                    base = Offset(
+                                      const Offset(-170, 0).dx +
+                                          radius *
+                                              cos(
+                                                  startAngle + (i * angleStep)),
+                                      const Offset(-170, 0).dy +
+                                          radius *
+                                              sin(
+                                                  startAngle + (i * angleStep)),
+                                    );
+                                  } else {
+                                    final int leftSideCount =
+                                        (totalCount / 2).ceil();
+                                    if (i < leftSideCount) {
+                                      final double startAngle = pi * 0.7;
+                                      final double endAngle = pi * 1.3;
+                                      final double angleStep =
+                                          leftSideCount <= 1
+                                              ? 0.0
+                                              : (endAngle - startAngle) /
+                                                  (leftSideCount - 1);
+                                      base = Offset(
+                                        const Offset(-170, 0).dx +
+                                            radius *
+                                                cos(startAngle +
+                                                    (i * angleStep)),
+                                        const Offset(-170, 0).dy +
+                                            radius *
+                                                sin(startAngle +
+                                                    (i * angleStep)),
+                                      );
+                                    } else {
+                                      final int rightSideIndex =
+                                          i - leftSideCount;
+                                      final int rightSideCount =
+                                          totalCount - leftSideCount;
+                                      final double startAngle = -pi * 0.3;
+                                      final double endAngle = pi * 0.3;
+                                      final double angleStep =
+                                          rightSideCount <= 1
+                                              ? 0.0
+                                              : (endAngle - startAngle) /
+                                                  (rightSideCount - 1);
+                                      base = Offset(
+                                        const Offset(170, 0).dx +
+                                            radius *
+                                                cos(startAngle +
+                                                    (rightSideIndex *
+                                                        angleStep)),
+                                        const Offset(170, 0).dy +
+                                            radius *
+                                                sin(startAngle +
+                                                    (rightSideIndex *
+                                                        angleStep)),
+                                      );
+                                    }
+                                  }
                                 }
                               }
-                            }
-                          }
-
-                          final pos = base;
-                          final currentRabbitName = widget.members[i];
-
-                          return Transform.translate(
-                            offset: pos,
-                            child: Transform.rotate(
-                              angle: atan2(-pos.dy, -pos.dx) * 0.12,
-                              child: Stack(
-                                // ✅ MAGIC KEY FIXED: Applied clipBehavior to allow content breakout
-                                clipBehavior: Clip.none,
-                                alignment: Alignment.topCenter,
-                                children: [
-                                  Column(
-                                    mainAxisSize: MainAxisSize.min,
+                              final pos = base;
+                              final currentRabbitName = widget.members[i];
+                              return Transform.translate(
+                                offset: pos,
+                                child: Transform.rotate(
+                                  angle: atan2(-pos.dy, -pos.dx) * 0.12,
+                                  child: Stack(
+                                    clipBehavior: Clip.none,
+                                    alignment: Alignment.topCenter,
                                     children: [
-                                      AnimatedContainer(
-                                        duration: const Duration(
-                                          milliseconds: 250,
-                                        ),
-                                        padding: const EdgeInsets.all(6),
-                                        decoration: BoxDecoration(
-                                          shape: BoxShape.circle,
-                                          boxShadow:
-                                              selectedMembers.contains(
-                                                currentRabbitName,
-                                              )
-                                              ? [
-                                                  BoxShadow(
-                                                    color: Colors.amber
-                                                        .withOpacity(0.7),
-                                                    blurRadius: 25,
-                                                    spreadRadius: 4,
-                                                  ),
-                                                ]
-                                              : [],
-                                        ),
-                                        child: AnimatedScale(
-                                          duration: const Duration(
-                                            milliseconds: 250,
+                                      Column(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          AnimatedContainer(
+                                            duration: const Duration(
+                                                milliseconds: 250),
+                                            padding: const EdgeInsets.all(6),
+                                            decoration: BoxDecoration(
+                                              shape: BoxShape.circle,
+                                              boxShadow: selectedMembers
+                                                      .contains(currentRabbitName)
+                                                  ? [
+                                                      BoxShadow(
+                                                        color: Colors.amber
+                                                            .withOpacity(0.7),
+                                                        blurRadius: 25,
+                                                        spreadRadius: 4,
+                                                      ),
+                                                    ]
+                                                  : [],
+                                            ),
+                                            child: AnimatedScale(
+                                              duration: const Duration(
+                                                  milliseconds: 250),
+                                              scale: showReceipt
+                                                  ? 0.88
+                                                  : (selectedMembers.contains(
+                                                          currentRabbitName)
+                                                      ? 1.15
+                                                      : 1.0),
+                                              child: Lottie.asset(
+                                                "assets/rabbits/Rabbit Kick Scooter.json",
+                                                width: 145,
+                                                height: 145,
+                                              ),
+                                            ),
                                           ),
-                                          scale: showReceipt
-                                              ? 0.88
-                                              : (selectedMembers.contains(
-                                                      currentRabbitName,
-                                                    )
-                                                    ? 1.15
-                                                    : 1.0),
-                                          child: Lottie.asset(
-                                            "assets/rabbits/Rabbit Kick Scooter.json",
-                                            width: 145,
-                                            height: 145,
+                                          const SizedBox(height: 4),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(
+                                                horizontal: 10, vertical: 4),
+                                            decoration: BoxDecoration(
+                                              color: Colors.white
+                                                  .withOpacity(0.9),
+                                              borderRadius:
+                                                  BorderRadius.circular(10),
+                                            ),
+                                            child: Text(
+                                              currentRabbitName,
+                                              style: const TextStyle(
+                                                fontWeight: FontWeight.w600,
+                                                fontSize: 13,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                      Positioned.fill(
+                                        child: GestureDetector(
+                                          behavior: HitTestBehavior.opaque,
+                                          onTap: () {
+                                            if (showReceipt &&
+                                                isSelectiveModeActive) {
+                                              _openRabbitCustomLedgerForm(
+                                                  currentRabbitName);
+                                            } else if (!showReceipt) {
+                                              toggleMember(currentRabbitName);
+                                            }
+                                          },
+                                          child: const SizedBox.expand(
+                                            child: ColoredBox(
+                                                color: Colors.transparent),
                                           ),
                                         ),
                                       ),
-                                      const SizedBox(height: 4),
+                                      if (currentRabbitName ==
+                                          firstUnconfiguredRabbit)
+                                        AnimatedBuilder(
+                                          animation: _bounceAnimation,
+                                          builder: (context, child) {
+                                            return Positioned(
+                                              top: -38 + _bounceAnimation.value,
+                                              child: child!,
+                                            );
+                                          },
+                                          child: Material(
+                                            color: Colors.purple.shade700,
+                                            elevation: 6,
+                                            borderRadius:
+                                                BorderRadius.circular(10),
+                                            child: const Padding(
+                                              padding: EdgeInsets.symmetric(
+                                                  horizontal: 10, vertical: 5),
+                                              child: Row(
+                                                mainAxisSize: MainAxisSize.min,
+                                                children: [
+                                                  Text(
+                                                    "Tap Me!",
+                                                    style: TextStyle(
+                                                      fontFamily: "Caveat",
+                                                      color: Colors.white,
+                                                      fontSize: 15,
+                                                      fontWeight:
+                                                          FontWeight.bold,
+                                                    ),
+                                                  ),
+                                                  SizedBox(width: 4),
+                                                  Icon(Icons.pets,
+                                                      color: Colors.white,
+                                                      size: 14),
+                                                ],
+                                              ),
+                                            ),
+                                          ),
+                                        ),
+                                    ],
+                                  ),
+                                ),
+                              );
+                            }),
+                          );
+                        },
+                      ),
+                    ),
+                  ),
+                if (sceneState == SceneState.summaryView)
+                  AnimatedBuilder(
+                    animation: _bookFlipController,
+                    builder: (context, child) {
+                      return SizedBox(
+                        width: diaryBookWidth,
+                        height: diaryBookHeight,
+                        child: Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            if (_coverOpenAnimation.value < 0.99)
+                              Transform(
+                                alignment: Alignment.center,
+                                transform: Matrix4.identity()
+                                  ..setEntry(3, 2, 0.001)
+                                  ..rotateY(
+                                      _coverOpenAnimation.value * pi),
+                                child: Container(
+                                  width: diaryBookWidth * 0.52,
+                                  height: diaryBookHeight,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFE8D5F5),
+                                    borderRadius:
+                                        const BorderRadius.horizontal(
+                                      right: Radius.circular(24),
+                                    ),
+                                    border: Border.all(
+                                      color: const Color(0xFFEADCC9),
+                                      width: 5,
+                                    ),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Color(0x1F000000),
+                                        blurRadius: 20,
+                                        offset: Offset(5, 10),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Column(
+                                    mainAxisAlignment:
+                                        MainAxisAlignment.center,
+                                    children: [
                                       Container(
-                                        padding: const EdgeInsets.symmetric(
-                                          horizontal: 10,
-                                          vertical: 4,
+                                        padding: const EdgeInsets.all(12),
+                                        decoration: const BoxDecoration(
+                                          color: Color(0xFFEADCC9),
+                                          shape: BoxShape.circle,
                                         ),
-                                        decoration: BoxDecoration(
-                                          color: Colors.white.withOpacity(0.9),
-                                          borderRadius: BorderRadius.circular(
-                                            10,
-                                          ),
+                                        child: const Icon(
+                                          Icons.auto_stories,
+                                          size: 42,
+                                          color: Color(0xFF9B7FBD),
                                         ),
-                                        child: Text(
-                                          currentRabbitName,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w600,
-                                            fontSize: 13,
-                                          ),
+                                      ),
+                                      const SizedBox(height: 18),
+                                      const Text(
+                                        "My Travel Diary",
+                                        style: TextStyle(
+                                          fontFamily: "Caveat",
+                                          fontSize: 42,
+                                          fontWeight: FontWeight.bold,
+                                          color: Color(0xFF6B4F8A),
+                                        ),
+                                      ),
+                                      const SizedBox(height: 6),
+                                      Text(
+                                        "📖 ${widget.groupName} Ledger 🍃",
+                                        style: const TextStyle(
+                                          fontFamily: "Caveat",
+                                          fontSize: 20,
+                                          color: Color(0xFF7FA99B),
+                                          fontWeight: FontWeight.w600,
                                         ),
                                       ),
                                     ],
                                   ),
-                                  Positioned.fill(
-                                    child: GestureDetector(
-                                      behavior: HitTestBehavior.opaque,
-                                      onTap: () {
-                                        if (showReceipt &&
-                                            isSelectiveModeActive) {
-                                          _openRabbitCustomLedgerForm(
-                                            currentRabbitName,
-                                          );
-                                        } else if (!showReceipt) {
-                                          toggleMember(currentRabbitName);
-                                        }
-                                      },
-                                      child: const SizedBox.expand(
-                                        child: ColoredBox(
-                                          color: Colors.transparent,
-                                        ),
+                                ),
+                              ),
+                            if (_coverOpenAnimation.value > 0.01)
+                              Opacity(
+                                opacity: _pagesFadeAnimation.value,
+                                child: Container(
+                                  width: diaryBookWidth,
+                                  height: diaryBookHeight,
+                                  decoration: BoxDecoration(
+                                    color: const Color(0xFFFBF7F0),
+                                    borderRadius: BorderRadius.circular(28),
+                                    boxShadow: const [
+                                      BoxShadow(
+                                        color: Colors.black26,
+                                        blurRadius: 30,
+                                        offset: Offset(0, 15),
                                       ),
+                                    ],
+                                    border: Border.all(
+                                      color: const Color(0xFFE2D4C1),
+                                      width: 6,
                                     ),
                                   ),
-                                  if (currentRabbitName ==
-                                      firstUnconfiguredRabbit)
-                                    AnimatedBuilder(
-                                      animation: _bounceAnimation,
-                                      builder: (context, child) {
-                                        return Positioned(
-                                          top: -38 + _bounceAnimation.value,
-                                          child: child!,
-                                        );
-                                      },
-                                      child: Material(
-                                        color: Colors.purple.shade700,
-                                        elevation: 6,
-                                        borderRadius: BorderRadius.circular(10),
-                                        child: const Padding(
-                                          padding: EdgeInsets.symmetric(
-                                            horizontal: 10,
-                                            vertical: 5,
+                                  child: Row(
+                                    children: [
+                                      Expanded(
+                                        child: Container(
+                                          padding: const EdgeInsets.all(24),
+                                          decoration: const BoxDecoration(
+                                            border: Border(
+                                              right: BorderSide(
+                                                color: Color(0xFFEADCC9),
+                                                width: 2,
+                                              ),
+                                            ),
                                           ),
-                                          child: Row(
-                                            mainAxisSize: MainAxisSize.min,
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              Text(
-                                                "Tap Me!",
+                                              const Text(
+                                                "📖 Royal Treasury Ledger",
                                                 style: TextStyle(
                                                   fontFamily: "Caveat",
-                                                  color: Colors.white,
-                                                  fontSize: 15,
+                                                  fontSize: 28,
                                                   fontWeight: FontWeight.bold,
+                                                  color: Colors.brown,
                                                 ),
                                               ),
-                                              SizedBox(width: 4),
-                                              Icon(
-                                                Icons.pets,
-                                                color: Colors.white,
-                                                size: 14,
+                                              const SizedBox(height: 4),
+                                              const Text(
+                                                "The final coins matching pathways:",
+                                                style: TextStyle(
+                                                  fontFamily: "Caveat",
+                                                  fontSize: 18,
+                                                  color: Colors.black54,
+                                                ),
                                               ),
-                                            ],
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                ],
-                              ),
-                            ),
-                          );
-                        }),
-                      );
-                    },
-                  ),
-                ),
-              ),
-
-            // ==================================================================
-            // LAYER 4: THE DISNEY DIARY STORYBOOK LAYER STACK ENGINE
-            // ==================================================================
-            if (sceneState == SceneState.summaryView)
-              AnimatedBuilder(
-                animation: _bookFlipController,
-                builder: (context, child) {
-                  return SizedBox(
-                    width: diaryBookWidth,
-                    height: diaryBookHeight,
-                    child: Stack(
-                      alignment: Alignment.center,
-                      children: [
-                        // 📖 SUB-LAYER A: THE CLOSED DIARY LEATHER BOOK COVER
-                        // ==================================================================
-                        // Swapped out the old maroon cover for a dreamy macaron mint palette!
-                        if (_coverOpenAnimation.value < 0.99)
-                          Transform(
-                            alignment: Alignment.center,
-                            transform: Matrix4.identity()
-                              ..setEntry(3, 2, 0.001)
-                              ..rotateY(_coverOpenAnimation.value * pi),
-                            child: Container(
-                              width: diaryBookWidth * 0.52,
-                              height: diaryBookHeight,
-                              decoration: BoxDecoration(
-                                color: const Color(
-                                  0xFFD2E7DF,
-                                ), // 🍵 Whimsical Macaron Mint/Sage Green
-                                borderRadius: const BorderRadius.horizontal(
-                                  right: Radius.circular(24),
-                                ),
-                                border: Border.all(
-                                  color: const Color(0xFFEADCC9),
-                                  width: 5,
-                                ), // Soft Toasted Almond framing line
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Color(
-                                      0x1F000000,
-                                    ), // Ultra-soft elegant pastel drop shadow context
-                                    blurRadius: 20,
-                                    offset: Offset(5, 10),
-                                  ),
-                                ],
-                              ),
-                              child: Column(
-                                mainAxisAlignment: MainAxisAlignment.center,
-                                children: [
-                                  // Elegant almond-colored inner icon crest element
-                                  Container(
-                                    padding: const EdgeInsets.all(12),
-                                    decoration: const BoxDecoration(
-                                      color: Color(0xFFEADCC9),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: const Icon(
-                                      Icons.auto_stories,
-                                      size: 42,
-                                      color: Color(0xFF7FA99B),
-                                    ), // Matching deeper sage icon vector tone
-                                  ),
-                                  const SizedBox(height: 18),
-                                  const Text(
-                                    "My Travel Diary",
-                                    style: TextStyle(
-                                      fontFamily: "Caveat",
-                                      fontSize: 42,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF5D7A6F),
-                                    ), // Soft text contrast
-                                  ),
-                                  const SizedBox(height: 6),
-                                  Text(
-                                    "📖 ${widget.groupName} Ledger 🍃",
-                                    style: const TextStyle(
-                                      fontFamily: "Caveat",
-                                      fontSize: 20,
-                                      color: Color(0xFF7FA99B),
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ),
-
-                        // 📖 SUB-LAYER B: THE FLIPPED OPEN DOUBLE DIARY SHEETS
-                        if (_coverOpenAnimation.value > 0.01)
-                          Opacity(
-                            opacity: _pagesFadeAnimation.value,
-                            child: Container(
-                              width: diaryBookWidth,
-                              height: diaryBookHeight,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFFBF7F0),
-                                borderRadius: BorderRadius.circular(28),
-                                boxShadow: const [
-                                  BoxShadow(
-                                    color: Colors.black26,
-                                    blurRadius: 30,
-                                    offset: Offset(0, 15),
-                                  ),
-                                ],
-                                border: Border.all(
-                                  color: const Color(0xFFE2D4C1),
-                                  width: 6,
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  // LEFT DIARY SHEET: LEDGER TRANSACTION TRACKER ROWS
-                                  Expanded(
-                                    child: Container(
-                                      padding: const EdgeInsets.all(24),
-                                      decoration: const BoxDecoration(
-                                        border: Border(
-                                          right: BorderSide(
-                                            color: Color(0xFFEADCC9),
-                                            width: 2,
-                                          ),
-                                        ),
-                                      ),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            "📖 Royal Treasury Ledger",
-                                            style: TextStyle(
-                                              fontFamily: "Caveat",
-                                              fontSize: 28,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.brown,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 4),
-                                          const Text(
-                                            "The final coins matching pathways:",
-                                            style: TextStyle(
-                                              fontFamily: "Caveat",
-                                              fontSize: 18,
-                                              color: Colors.black54,
-                                            ),
-                                          ),
-                                          const Divider(
-                                            height: 20,
-                                            color: Color(0xFFEADCC9),
-                                          ),
-                                          Expanded(
-                                            child: isEntirelySettled
-                                                ? Center(
-                                                    child: Column(
-                                                      mainAxisAlignment:
-                                                          MainAxisAlignment
-                                                              .center,
-                                                      children: [
-                                                        Lottie.asset(
-                                                          "assets/rabbits/Rabbit Kick Scooter.json",
-                                                          width: 120,
-                                                          height: 120,
-                                                        ),
-                                                        const Text(
-                                                          "[✓] All settled up!",
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                "Caveat",
-                                                            fontSize: 24,
-                                                            fontWeight:
-                                                                FontWeight.bold,
-                                                            color: Colors.green,
-                                                          ),
-                                                        ),
-                                                        const Text(
-                                                          "The forest balance is at peace 🍃",
-                                                          style: TextStyle(
-                                                            fontFamily:
-                                                                "Caveat",
-                                                            fontSize: 18,
-                                                            color:
-                                                                Colors.black54,
-                                                          ),
-                                                        ),
-                                                      ],
-                                                    ),
-                                                  )
-                                                : ListView.builder(
-                                                    itemCount:
-                                                        computedDebts.length,
-                                                    itemBuilder: (context, index) {
-                                                      final debt =
-                                                          computedDebts[index];
-                                                      return Card(
-                                                        color: const Color(
-                                                          0xFFF5EDE0,
-                                                        ),
-                                                        elevation: 0,
-                                                        margin:
-                                                            const EdgeInsets.symmetric(
-                                                              vertical: 6,
+                                              const Divider(
+                                                height: 20,
+                                                color: Color(0xFFEADCC9),
+                                              ),
+                                              Expanded(
+                                                child: isEntirelySettled
+                                                    ? Center(
+                                                        child: Column(
+                                                          mainAxisAlignment:
+                                                              MainAxisAlignment
+                                                                  .center,
+                                                          children: [
+                                                            Lottie.asset(
+                                                              "assets/rabbits/Rabbit Kick Scooter.json",
+                                                              width: 120,
+                                                              height: 120,
                                                             ),
-                                                        shape: RoundedRectangleBorder(
-                                                          borderRadius:
-                                                              BorderRadius.circular(
-                                                                12,
+                                                            const Text(
+                                                              "[✓] All settled up!",
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    "Caveat",
+                                                                fontSize: 24,
+                                                                fontWeight:
+                                                                    FontWeight
+                                                                        .bold,
+                                                                color: Colors
+                                                                    .green,
                                                               ),
+                                                            ),
+                                                            const Text(
+                                                              "The forest balance is at peace 🍃",
+                                                              style: TextStyle(
+                                                                fontFamily:
+                                                                    "Caveat",
+                                                                fontSize: 18,
+                                                                color: Colors
+                                                                    .black54,
+                                                              ),
+                                                            ),
+                                                          ],
                                                         ),
-                                                        child: ListTile(
-                                                          leading: const Icon(
-                                                            Icons.swap_horiz,
-                                                            color: Colors.brown,
-                                                          ),
-                                                          title: Text(
-                                                            "🐰 ${debt['from']} needs to give ${debt['amount'].toStringAsFixed(2)} coins to ${debt['to']} 🪙",
-                                                            style:
-                                                                const TextStyle(
+                                                      )
+                                                    : ListView.builder(
+                                                        itemCount:
+                                                            computedDebts.length,
+                                                        itemBuilder:
+                                                            (context, index) {
+                                                          final debt =
+                                                              computedDebts[
+                                                                  index];
+                                                          return Card(
+                                                            color: const Color(
+                                                                0xFFF5EDE0),
+                                                            elevation: 0,
+                                                            margin: const EdgeInsets
+                                                                .symmetric(
+                                                                vertical: 6),
+                                                            shape: RoundedRectangleBorder(
+                                                              borderRadius:
+                                                                  BorderRadius
+                                                                      .circular(
+                                                                          12),
+                                                            ),
+                                                            child: ListTile(
+                                                              leading: const Icon(
+                                                                Icons.swap_horiz,
+                                                                color:
+                                                                    Colors.brown,
+                                                              ),
+                                                              title: Text(
+                                                                "🐰 ${debt['from']} needs to give ${debt['amount'].toStringAsFixed(2)} coins to ${debt['to']} 🪙",
+                                                                style:
+                                                                    const TextStyle(
                                                                   fontFamily:
                                                                       "Caveat",
                                                                   fontSize: 18,
@@ -1888,229 +1854,300 @@ class _ReceiptPageState extends State<ReceiptPage>
                                                                       FontWeight
                                                                           .bold,
                                                                 ),
-                                                          ),
-                                                          trailing: TextButton(
-                                                            onPressed: () {
-                                                              setState(() {
-                                                                computedDebts
-                                                                    .removeAt(
-                                                                      index,
-                                                                    );
-                                                                if (computedDebts
-                                                                    .isEmpty)
-                                                                  isEntirelySettled =
-                                                                      true;
-                                                              });
-                                                            },
-                                                            child: const Text(
-                                                              "Settle 🐾",
-                                                              style: TextStyle(
-                                                                fontFamily:
-                                                                    "Caveat",
-                                                                fontSize: 16,
-                                                                color: Colors
-                                                                    .purple,
-                                                                fontWeight:
-                                                                    FontWeight
-                                                                        .bold,
+                                                              ),
+                                                              trailing:
+                                                                  TextButton(
+                                                                onPressed: () {
+                                                                  setState(() {
+                                                                    computedDebts
+                                                                        .removeAt(
+                                                                            index);
+                                                                    if (computedDebts
+                                                                        .isEmpty)
+                                                                      isEntirelySettled =
+                                                                          true;
+                                                                  });
+                                                                },
+                                                                child:
+                                                                    const Text(
+                                                                  "Settle 🐾",
+                                                                  style:
+                                                                      TextStyle(
+                                                                    fontFamily:
+                                                                        "Caveat",
+                                                                    fontSize: 16,
+                                                                    color: Colors
+                                                                        .purple,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                  ),
+                                                                ),
                                                               ),
                                                             ),
+                                                          );
+                                                        },
+                                                      ),
+                                              ),
+                                            ],
+                                          ),
+                                        ),
+                                      ),
+                                      Expanded(
+                                        child: SingleChildScrollView(
+                                          padding: const EdgeInsets.all(24),
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              const Text(
+                                                "📊 Magical Kingdom Analytics",
+                                                style: TextStyle(
+                                                  fontFamily: "Caveat",
+                                                  fontSize: 26,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.brown,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 14),
+                                              const Text(
+                                                "Who Spent The Most Coins? (Contribution Pillars)",
+                                                style: TextStyle(
+                                                  fontFamily: "Caveat",
+                                                  fontSize: 16,
+                                                  color: Colors.black54,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 8),
+                                              Container(
+                                                height: 140,
+                                                padding:
+                                                    const EdgeInsets.symmetric(
+                                                        horizontal: 10),
+                                                decoration: BoxDecoration(
+                                                  color:
+                                                      const Color(0xFFF3EDE2),
+                                                  borderRadius:
+                                                      BorderRadius.circular(14),
+                                                ),
+                                                child: Row(
+                                                  mainAxisAlignment:
+                                                      MainAxisAlignment
+                                                          .spaceAround,
+                                                  crossAxisAlignment:
+                                                      CrossAxisAlignment.end,
+                                                  children: widget.members
+                                                      .map((m) {
+                                                    double spent =
+                                                        totalSpendingPerRabbit[
+                                                                m] ??
+                                                            0.0;
+                                                    double maxSpent =
+                                                        totalSpendingPerRabbit
+                                                            .values
+                                                            .fold(
+                                                                1.0,
+                                                                (maxV, v) =>
+                                                                    max(maxV,
+                                                                        v));
+                                                    double scaleHeight =
+                                                        spent == 0
+                                                            ? 8
+                                                            : (spent /
+                                                                    maxSpent) *
+                                                                70;
+                                                    return Column(
+                                                      mainAxisAlignment:
+                                                          MainAxisAlignment.end,
+                                                      mainAxisSize:
+                                                          MainAxisSize.max,
+                                                      crossAxisAlignment:
+                                                          CrossAxisAlignment
+                                                              .center,
+                                                      children: [
+                                                        Flexible(
+                                                          child: Text(
+                                                            "${spent.toStringAsFixed(0)}🪙",
+                                                            style:
+                                                                const TextStyle(
+                                                              fontFamily:
+                                                                  "Caveat",
+                                                              fontSize: 12,
+                                                            ),
                                                           ),
                                                         ),
-                                                      );
-                                                    },
-                                                  ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-
-                                  // RIGHT DIARY SHEET: VECTOR COLUMN GRAPH PILLARS & AWARDS
-                                  Expanded(
-                                    child: SingleChildScrollView(
-                                      padding: const EdgeInsets.all(24),
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          const Text(
-                                            "📊 Magical Kingdom Analytics",
-                                            style: TextStyle(
-                                              fontFamily: "Caveat",
-                                              fontSize: 26,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.brown,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 14),
-
-                                          const Text(
-                                            "Who Spent The Most Coins? (Contribution Pillars)",
-                                            style: TextStyle(
-                                              fontFamily: "Caveat",
-                                              fontSize: 16,
-                                              color: Colors.black54,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 8),
-
-                                          Container(
-                                            height: 140,
-                                            padding: const EdgeInsets.symmetric(
-                                              horizontal: 10,
-                                            ),
-                                            decoration: BoxDecoration(
-                                              color: const Color(0xFFF3EDE2),
-                                              borderRadius:
-                                                  BorderRadius.circular(14),
-                                            ),
-                                            child: Row(
-                                              mainAxisAlignment:
-                                                  MainAxisAlignment.spaceAround,
-                                              crossAxisAlignment:
-                                                  CrossAxisAlignment.end,
-                                              children: widget.members.map((m) {
-                                                double spent =
-                                                    totalSpendingPerRabbit[m] ??
-                                                    0.0;
-                                                double maxSpent =
-                                                    totalSpendingPerRabbit
-                                                        .values
-                                                        .fold(
-                                                          1.0,
-                                                          (maxV, v) =>
-                                                              max(maxV, v),
-                                                        );
-                                                double scaleHeight = spent == 0
-                                                    ? 8
-                                                    : (spent / maxSpent) * 70;
-
-                                                return Column(
-                                                  mainAxisAlignment:
-                                                      MainAxisAlignment.end,
-                                                  mainAxisSize:
-                                                      MainAxisSize.max,
-                                                  crossAxisAlignment:
-                                                      CrossAxisAlignment.center,
-                                                  children: [
-                                                    Flexible(
-                                                      child: Text(
-                                                        "${spent.toStringAsFixed(0)}🪙",
-                                                        style: const TextStyle(
-                                                          fontFamily: "Caveat",
-                                                          fontSize: 12,
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 2),
-                                                    AnimatedContainer(
-                                                      duration: const Duration(
-                                                        milliseconds: 800,
-                                                      ),
-                                                      width: 24,
-                                                      height: scaleHeight,
-                                                      decoration: BoxDecoration(
-                                                        color: Colors.purple
-                                                            .withOpacity(0.6),
-                                                        borderRadius:
-                                                            const BorderRadius.vertical(
+                                                        const SizedBox(
+                                                            height: 2),
+                                                        AnimatedContainer(
+                                                          duration:
+                                                              const Duration(
+                                                                  milliseconds:
+                                                                      800),
+                                                          width: 24,
+                                                          height: scaleHeight,
+                                                          decoration:
+                                                              BoxDecoration(
+                                                            color: Colors.purple
+                                                                .withOpacity(
+                                                                    0.6),
+                                                            borderRadius:
+                                                                const BorderRadius
+                                                                    .vertical(
                                                               top:
                                                                   Radius.circular(
-                                                                    6,
-                                                                  ),
+                                                                      6),
                                                             ),
-                                                      ),
-                                                    ),
-                                                    const SizedBox(height: 4),
-                                                    Flexible(
-                                                      child: Text(
-                                                        m,
-                                                        style: const TextStyle(
-                                                          fontFamily: "Caveat",
-                                                          fontSize: 13,
-                                                          fontWeight:
-                                                              FontWeight.bold,
+                                                          ),
                                                         ),
-                                                      ),
-                                                    ),
-                                                  ],
-                                                );
-                                              }).toList(),
-                                            ),
-                                          ),
-
-                                          const SizedBox(height: 20),
-                                          const Divider(
-                                            color: Color(0xFFEADCC9),
-                                          ),
-                                          const SizedBox(height: 6),
-
-                                          const Text(
-                                            "📜 Whispering Woods Awards",
-                                            style: TextStyle(
-                                              fontFamily: "Caveat",
-                                              fontSize: 20,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.brown,
-                                            ),
-                                          ),
-                                          const Text(
-                                            "Tap any companion avatar block to view diary logs:",
-                                            style: TextStyle(
-                                              fontFamily: "Caveat",
-                                              fontSize: 15,
-                                              color: Colors.black45,
-                                            ),
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Wrap(
-                                            spacing: 8,
-                                            runSpacing: 8,
-                                            children: widget.members.map((m) {
-                                              return InkWell(
-                                                onTap: () =>
-                                                    _showRabbitStorybookAwardDialog(
-                                                      m,
-                                                    ),
-                                                borderRadius:
-                                                    BorderRadius.circular(12),
-                                                child: Container(
-                                                  padding:
-                                                      const EdgeInsets.symmetric(
-                                                        horizontal: 12,
-                                                        vertical: 8,
-                                                      ),
-                                                  decoration: BoxDecoration(
-                                                    color: const Color(
-                                                      0xFFEADCC9,
-                                                    ).withOpacity(0.5),
+                                                        const SizedBox(
+                                                            height: 4),
+                                                        Flexible(
+                                                          child: Text(
+                                                            m,
+                                                            style:
+                                                                const TextStyle(
+                                                              fontFamily:
+                                                                  "Caveat",
+                                                              fontSize: 13,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                      ],
+                                                    );
+                                                  }).toList(),
+                                                ),
+                                              ),
+                                              const SizedBox(height: 20),
+                                              const Divider(
+                                                  color: Color(0xFFEADCC9)),
+                                              const SizedBox(height: 6),
+                                              const Text(
+                                                "📜 Whispering Woods Awards",
+                                                style: TextStyle(
+                                                  fontFamily: "Caveat",
+                                                  fontSize: 20,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: Colors.brown,
+                                                ),
+                                              ),
+                                              const Text(
+                                                "Tap any companion avatar block to view diary logs:",
+                                                style: TextStyle(
+                                                  fontFamily: "Caveat",
+                                                  fontSize: 15,
+                                                  color: Colors.black45,
+                                                ),
+                                              ),
+                                              const SizedBox(height: 10),
+                                              Wrap(
+                                                spacing: 8,
+                                                runSpacing: 8,
+                                                children: widget.members
+                                                    .map((m) {
+                                                  return InkWell(
+                                                    onTap: () =>
+                                                        _showRabbitStorybookAwardDialog(
+                                                            m),
                                                     borderRadius:
                                                         BorderRadius.circular(
-                                                          12,
+                                                            12),
+                                                    child: Container(
+                                                      padding: const EdgeInsets
+                                                          .symmetric(
+                                                          horizontal: 12,
+                                                          vertical: 8),
+                                                      decoration: BoxDecoration(
+                                                        color: const Color(
+                                                                0xFFEADCC9)
+                                                            .withOpacity(0.5),
+                                                        borderRadius:
+                                                            BorderRadius
+                                                                .circular(12),
+                                                        border: Border.all(
+                                                          color: const Color(
+                                                              0xFFEADCC9),
                                                         ),
-                                                    border: Border.all(
-                                                      color: const Color(
-                                                        0xFFEADCC9,
+                                                      ),
+                                                      child: Row(
+                                                        mainAxisSize:
+                                                            MainAxisSize.min,
+                                                        children: [
+                                                          const Icon(
+                                                            Icons
+                                                                .auto_stories_outlined,
+                                                            size: 16,
+                                                            color: Colors.brown,
+                                                          ),
+                                                          const SizedBox(
+                                                              width: 6),
+                                                          Text(
+                                                            m,
+                                                            style:
+                                                                const TextStyle(
+                                                              fontFamily:
+                                                                  "Caveat",
+                                                              fontSize: 16,
+                                                              fontWeight:
+                                                                  FontWeight
+                                                                      .bold,
+                                                            ),
+                                                          ),
+                                                        ],
                                                       ),
                                                     ),
+                                                  );
+                                                }).toList(),
+                                              ),
+                                              const SizedBox(height: 24),
+                                              const Divider(
+                                                color: Color(0xFFEADCC9),
+                                                thickness: 1.5,
+                                              ),
+                                              const SizedBox(height: 16),
+                                              Center(
+                                                child: ElevatedButton(
+                                                  style:
+                                                      ElevatedButton.styleFrom(
+                                                    backgroundColor:
+                                                        const Color(0xFF7FA99B),
+                                                    foregroundColor:
+                                                        Colors.white,
+                                                    elevation: 2,
+                                                    shape:
+                                                        RoundedRectangleBorder(
+                                                      borderRadius:
+                                                          BorderRadius.circular(
+                                                              16),
+                                                    ),
+                                                    padding: const EdgeInsets
+                                                        .symmetric(
+                                                        horizontal: 32,
+                                                        vertical: 14),
                                                   ),
-                                                  child: Row(
+                                                  onPressed: () async {
+                                                    await _bookFlipController
+                                                        .reverse();
+                                                    if (mounted) {
+                                                      Navigator.of(context)
+                                                          .popUntil((route) =>
+                                                              route.isFirst);
+                                                    }
+                                                  },
+                                                  child: const Row(
                                                     mainAxisSize:
                                                         MainAxisSize.min,
                                                     children: [
-                                                      const Icon(
-                                                        Icons
-                                                            .auto_stories_outlined,
-                                                        size: 16,
-                                                        color: Colors.brown,
-                                                      ),
-                                                      const SizedBox(width: 6),
+                                                      Icon(Icons.castle,
+                                                          size: 20),
+                                                      SizedBox(width: 10),
                                                       Text(
-                                                        m,
-                                                        style: const TextStyle(
+                                                        "Back to Home 🏰",
+                                                        style: TextStyle(
                                                           fontFamily: "Caveat",
-                                                          fontSize: 16,
+                                                          fontSize: 20,
                                                           fontWeight:
                                                               FontWeight.bold,
                                                         ),
@@ -2118,85 +2155,24 @@ class _ReceiptPageState extends State<ReceiptPage>
                                                     ],
                                                   ),
                                                 ),
-                                              );
-                                            }).toList(),
-                                          ),
-                                          // 2. ADD A LITTLE SPACE AND A DIVIDER FOR A CLEAN DIARY LOOK:
-                                          const SizedBox(height: 24),
-                                          const Divider(
-                                            color: Color(0xFFEADCC9),
-                                            thickness: 1.5,
-                                          ),
-                                          const SizedBox(height: 16),
-
-                                          Center(
-                                            child: ElevatedButton(
-                                              style: ElevatedButton.styleFrom(
-                                                backgroundColor: const Color(
-                                                  0xFF7FA99B,
-                                                ), // Soft Green Macaron Sage
-                                                foregroundColor: Colors.white,
-                                                elevation: 2,
-                                                shape: RoundedRectangleBorder(
-                                                  borderRadius:
-                                                      BorderRadius.circular(16),
-                                                ),
-                                                padding:
-                                                    const EdgeInsets.symmetric(
-                                                      horizontal: 32,
-                                                      vertical: 14,
-                                                    ),
                                               ),
-
-                                              onPressed: () async {
-                                                // 1. 📖 Smoothly close the macaron diary cover panels first
-                                                await _bookFlipController
-                                                    .reverse();
-
-                                                // 2. 🏰 TELEPORT ROOT STACK CLEAR: Instantly drop back to HomePage in main.dart.
-                                                // This automatically disposes of this screen and wipes its memory clean!
-                                                if (mounted) {
-                                                  Navigator.of(
-                                                    context,
-                                                  ).popUntil(
-                                                    (route) => route.isFirst,
-                                                  );
-                                                }
-                                              },
-
-                                              child: const Row(
-                                                mainAxisSize: MainAxisSize.min,
-                                                children: [
-                                                  Icon(Icons.castle, size: 20),
-                                                  SizedBox(width: 10),
-                                                  Text(
-                                                    "Back to Home 🏰",
-                                                    style: TextStyle(
-                                                      fontFamily: "Caveat",
-                                                      fontSize: 20,
-                                                      fontWeight:
-                                                          FontWeight.bold,
-                                                    ),
-                                                  ),
-                                                ],
-                                              ),
-                                            ),
-                                          ), // 🏰 Button ends here
-                                        ], // This closes your right-page main Column
+                                            ],
+                                          ),
+                                        ),
                                       ),
-                                    ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                            ),
-                          ),
-                      ],
-                    ),
-                  );
-                },
-              ),
-          ],
-        ),
+                          ],
+                        ),
+                      );
+                    },
+                  ),
+              ],
+            ),
+          ),
+        ],
       ),
     );
   }

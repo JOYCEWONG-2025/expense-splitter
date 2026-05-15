@@ -1,13 +1,15 @@
 ﻿import 'dart:convert';
-
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:fl_chart/fl_chart.dart';
-import 'features/world/world_home.dart';
+import 'package:expense_splitter/features/world/world_home.dart';
 import 'package:lottie/lottie.dart';
+import 'package:google_fonts/google_fonts.dart';
 
+// --- MODELS & CONSTANTS ---
 const List<String> expenseCategories = [
   'Food',
   'Transport',
@@ -84,6 +86,7 @@ class Expense {
 }
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const MyApp());
 }
 
@@ -95,8 +98,8 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
+  // --- STATE & PERSISTENCE LOGIC ---
   static const String _groupsKey = 'saved_groups';
-
   List<Group> groups = [];
   bool isLoading = true;
 
@@ -128,6 +131,7 @@ class _MyAppState extends State<MyApp> {
     await prefs.setString(_groupsKey, encoded);
   }
 
+  // --- GROUP ACTIONS ---
   void addGroup(String name) {
     final trimmed = name.trim();
     if (trimmed.isEmpty) return;
@@ -144,6 +148,40 @@ class _MyAppState extends State<MyApp> {
     _saveGroups();
   }
 
+  void _showDeleteConfirmation(BuildContext context, int index) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(25)),
+        title: Text("Remove Magic Group? 🏰", style: GoogleFonts.fredoka()),
+        content: Text(
+          "Are you sure you want to dissolve this adventure? All carrot coins will be lost!",
+          style: GoogleFonts.fredoka(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Keep it"),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: Colors.redAccent,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(15),
+              ),
+            ),
+            onPressed: () {
+              deleteGroup(index); // This calls your original logic
+              Navigator.pop(context);
+            },
+            child: const Text("Remove"),
+          ),
+        ],
+      ),
+    );
+  }
+
   void updateGroup(int index, String newName) {
     final trimmed = newName.trim();
     if (trimmed.isEmpty) return;
@@ -153,91 +191,82 @@ class _MyAppState extends State<MyApp> {
     _saveGroups();
   }
 
-  void showEditGroupDialog(BuildContext dialogContext, int index) {
+  // --- STYLIZED DIALOGS ---
+  void showEditGroupDialog(BuildContext context, int index) {
     final controller = TextEditingController(text: groups[index].name);
     showDialog(
-      context: dialogContext,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            final canSave = controller.text.trim().isNotEmpty;
-            return AlertDialog(
-              title: const Text('Edit Group'),
-              content: TextField(
-                controller: controller,
-                autofocus: true,
-                decoration: const InputDecoration(hintText: 'Enter group name'),
-                onChanged: (_) => setState(() {}),
-                onSubmitted: (_) {
-                  if (canSave) {
-                    updateGroup(index, controller.text);
-                    Navigator.pop(context);
-                  }
-                },
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          final canSave = controller.text.trim().isNotEmpty;
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+            title: Text('Rename Adventure', style: GoogleFonts.fredoka()),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: const InputDecoration(hintText: 'Enter new name'),
+              onChanged: (_) => setState(() {}),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: canSave
-                      ? () {
-                          updateGroup(index, controller.text);
-                          Navigator.pop(context);
-                        }
-                      : null,
-                  child: const Text('Save'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+              ElevatedButton(
+                onPressed: canSave
+                    ? () {
+                        updateGroup(index, controller.text);
+                        Navigator.pop(context);
+                      }
+                    : null,
+                child: const Text('Save'),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
-  void showAddGroupDialog(BuildContext dialogContext) {
+  void showAddGroupDialog(BuildContext context) {
     final controller = TextEditingController();
     showDialog(
-      context: dialogContext,
-      builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            final canAdd = controller.text.trim().isNotEmpty;
-            return AlertDialog(
-              title: const Text('Create Group'),
-              content: TextField(
-                controller: controller,
-                autofocus: true,
-                decoration: const InputDecoration(hintText: 'Enter group name'),
-                onChanged: (_) => setState(() {}),
-                onSubmitted: (_) {
-                  if (canAdd) {
-                    addGroup(controller.text);
-                    Navigator.pop(context);
-                  }
-                },
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setState) {
+          final canAdd = controller.text.trim().isNotEmpty;
+          return AlertDialog(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(25),
+            ),
+            title: Text('New Magic Group', style: GoogleFonts.fredoka()),
+            content: TextField(
+              controller: controller,
+              autofocus: true,
+              decoration: const InputDecoration(hintText: 'Group name'),
+              onChanged: (_) => setState(() {}),
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('Cancel'),
               ),
-              actions: [
-                TextButton(
-                  onPressed: () => Navigator.pop(context),
-                  child: const Text('Cancel'),
-                ),
-                ElevatedButton(
-                  onPressed: canAdd
-                      ? () {
-                          addGroup(controller.text);
-                          Navigator.pop(context);
-                        }
-                      : null,
-                  child: const Text('Add'),
-                ),
-              ],
-            );
-          },
-        );
-      },
+              ElevatedButton(
+                onPressed: canAdd
+                    ? () {
+                        addGroup(controller.text);
+                        Navigator.pop(context);
+                      }
+                    : null,
+                child: const Text('Create'),
+              ),
+            ],
+          );
+        },
+      ),
     );
   }
 
@@ -247,129 +276,140 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: const [Locale('en', 'US')],
+      theme: ThemeData(useMaterial3: true),
       home: Builder(
-        builder: (context) {
+        builder: (innerContext) {
+          // innerContext is used to solve the Navigator error
           return Scaffold(
+            extendBodyBehindAppBar: true,
             appBar: AppBar(
-              title: const Text('Expense Splitter 💰'),
+              backgroundColor: Colors.transparent,
+              elevation: 0,
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.pets),
-                  onPressed: () {
-                    Navigator.push(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => WorldHome(),
-                      ),
-                    );
-                  },
+                  icon: const Icon(Icons.pets, color: Colors.purple),
+                  onPressed: () => Navigator.push(
+                    innerContext,
+                    MaterialPageRoute(builder: (context) => const WorldHome()),
+                  ),
                 ),
               ],
             ),
             body: Stack(
               children: [
+                // 1. BACKGROUND GRADIENT
+                Container(
+                  decoration: const BoxDecoration(
+                    gradient: LinearGradient(
+                      begin: Alignment.topLeft,
+                      end: Alignment.bottomRight,
+                      colors: [Color(0xFFF3EEF5), Color(0xFFE1F5FE)],
+                    ),
+                  ),
+                ),
+
+                // 2. MAGICAL DECORATIONS
+                _buildDecorationCircle(
+                  top: -40,
+                  left: -30,
+                  size: 150,
+                  color: Colors.purple.withOpacity(0.1),
+                ),
+                _buildDecorationCircle(
+                  bottom: 150,
+                  right: -50,
+                  size: 180,
+                  color: Colors.blue.withOpacity(0.08),
+                ),
+
                 Padding(
-                  padding: const EdgeInsets.all(16.0),
+                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        '💰 Expense Splitter',
-                        style: TextStyle(
-                          fontSize: 28,
+                      const SizedBox(height: 100),
+
+                      // 3. STYLIZED HEADER
+                      Text(
+                        "Wonderland Ledger ✨",
+                        style: GoogleFonts.fredoka(
+                          fontSize: 34,
                           fontWeight: FontWeight.bold,
+                          color: const Color(0xFF6A1B9A),
+                          shadows: [
+                            const Shadow(
+                              blurRadius: 10,
+                              color: Colors.black12,
+                              offset: Offset(2, 2),
+                            ),
+                          ],
                         ),
                       ),
-                      const SizedBox(height: 20),
-                      ElevatedButton(
-                        onPressed: () => showAddGroupDialog(context),
-                        child: const Text('➕ Create Group'),
+                      Text(
+                        "Track your carrot coins together",
+                        style: GoogleFonts.fredoka(
+                          fontSize: 16,
+                          color: Colors.purple.withOpacity(0.5),
+                        ),
                       ),
+
                       const SizedBox(height: 30),
-                      const Text(
-                        'Your Groups',
-                        style: TextStyle(
-                          fontSize: 18,
+
+                      // 4. ACTION BUTTON
+                      ElevatedButton.icon(
+                        onPressed: () => showAddGroupDialog(innerContext),
+                        icon: const Icon(Icons.add_circle_outline),
+                        label: const Text('Start New Adventure'),
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF9B5DE5),
+                          foregroundColor: Colors.white,
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 20,
+                            vertical: 12,
+                          ),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(20),
+                          ),
+                          elevation: 6,
+                        ),
+                      ),
+
+                      const SizedBox(height: 40),
+
+                      Text(
+                        'Your Magical Groups',
+                        style: GoogleFonts.fredoka(
+                          fontSize: 20,
                           fontWeight: FontWeight.w600,
                         ),
                       ),
-                      const SizedBox(height: 10),
+
+                      const SizedBox(height: 15),
+
+                      // 5. GROUP LIST
                       Expanded(
                         child: isLoading
                             ? const Center(child: CircularProgressIndicator())
                             : groups.isEmpty
-                            ? const Center(
+                            ? Center(
                                 child: Text(
-                                  'No groups yet. Tap Create Group to add one.',
-                                  textAlign: TextAlign.center,
+                                  'No groups yet. Tap above to start!',
+                                  style: GoogleFonts.fredoka(),
                                 ),
                               )
                             : ListView.builder(
+                                padding: EdgeInsets.zero,
+                                physics: const BouncingScrollPhysics(),
                                 itemCount: groups.length,
-                                itemBuilder: (context, index) {
-                                  final group = groups[index];
-                                  return Dismissible(
-                                    key: Key('group-$index'),
-                                    direction: DismissDirection.endToStart,
-                                    background: Container(
-                                      color: Colors.red,
-                                      alignment: Alignment.centerRight,
-                                      padding: const EdgeInsets.only(
-                                        right: 16.0,
-                                      ),
-                                      child: const Icon(
-                                        Icons.delete,
-                                        color: Colors.white,
-                                      ),
-                                    ),
-                                    onDismissed: (_) => deleteGroup(index),
-                                    child: ListTile(
-                                      title: Text(group.name),
-                                      onTap: () {
-                                        Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                            builder: (context) =>
-                                                GroupDetailPage(
-                                                  group: group,
-                                                  onRename: (newName) =>
-                                                      updateGroup(
-                                                        index,
-                                                        newName,
-                                                      ),
-                                                  onUpdate: _saveGroups,
-                                                ),
-                                          ),
-                                        );
-                                      },
-                                      trailing: Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          IconButton(
-                                            icon: const Icon(Icons.edit),
-                                            onPressed: () =>
-                                                showEditGroupDialog(
-                                                  context,
-                                                  index,
-                                                ),
-                                            tooltip: 'Edit group',
-                                          ),
-                                          IconButton(
-                                            icon: const Icon(Icons.delete),
-                                            onPressed: () => deleteGroup(index),
-                                            tooltip: 'Delete group',
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  );
-                                },
+                                itemBuilder: (context, index) =>
+                                    _buildGroupCard(innerContext, index),
                               ),
                       ),
                     ],
                   ),
                 ),
 
+                // 6. RABBIT ANIMATION
                 Positioned(
                   bottom: 20,
                   right: 20,
@@ -382,6 +422,112 @@ class _MyAppState extends State<MyApp> {
             ),
           );
         },
+      ),
+    );
+  }
+
+  // --- UI COMPONENTS ---
+  Widget _buildDecorationCircle({
+    double? top,
+    double? left,
+    double? right,
+    double? bottom,
+    required double size,
+    required Color color,
+  }) {
+    return Positioned(
+      top: top,
+      left: left,
+      right: right,
+      bottom: bottom,
+      child: Container(
+        width: size,
+        height: size,
+        decoration: BoxDecoration(shape: BoxShape.circle, color: color),
+      ),
+    );
+  }
+
+  Widget _buildGroupCard(BuildContext context, int index) {
+    final group = groups[index];
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white.withOpacity(0.7),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white, width: 2),
+        boxShadow: [
+          BoxShadow(
+            color: Colors.black.withOpacity(0.04),
+            blurRadius: 10,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: ClipRRect(
+        borderRadius: BorderRadius.circular(24),
+        child: BackdropFilter(
+          filter: ImageFilter.blur(sigmaX: 6, sigmaY: 6),
+          child: ListTile(
+            contentPadding: const EdgeInsets.symmetric(
+              horizontal: 20,
+              vertical: 10,
+            ),
+            title: Text(
+              group.name,
+              style: GoogleFonts.fredoka(
+                fontWeight: FontWeight.bold,
+                fontSize: 18,
+              ),
+            ),
+            subtitle: Text(
+              "${group.members.length} member(s)",
+              style: GoogleFonts.fredoka(),
+            ),
+            trailing: Row(
+              mainAxisSize: MainAxisSize
+                  .min, // Crucial: Keeps the row from taking full width
+              children: [
+                // 1. DELETE BUTTON
+                IconButton(
+                  icon: const Icon(
+                    Icons.delete_outline,
+                    color: Colors.redAccent,
+                    size: 20,
+                  ),
+                  onPressed: () => _showDeleteConfirmation(context, index),
+                  tooltip: 'Dissolve Adventure',
+                ),
+
+                // 2. EDIT BUTTON
+                IconButton(
+                  icon: const Icon(
+                    Icons.edit_outlined,
+                    size: 20,
+                    color: Colors.blueGrey,
+                  ),
+                  onPressed: () => showEditGroupDialog(context, index),
+                  tooltip: 'Rename Adventure',
+                ),
+
+                // 3. NAVIGATION CHEVRON
+                const Icon(Icons.chevron_right, color: Color(0xFF9B5DE5)),
+              ],
+            ),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => GroupDetailPage(
+                    group: group,
+                    onRename: (newName) => updateGroup(index, newName),
+                    onUpdate: _saveGroups,
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
       ),
     );
   }
@@ -1046,6 +1192,8 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                   onPressed: canSave
                       ? () {
                           widget.onRename(controller.text);
+                          widget.group.name = controller.text.trim();
+                          this.setState(() {});  
                           Navigator.pop(context);
                         }
                       : null,
@@ -1120,19 +1268,33 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
     final filteredExpenses = _filteredExpenses();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Group Details')),
+      backgroundColor: Colors.transparent,
+      extendBodyBehindAppBar: true,
+      appBar: AppBar(
+        // 2. Make AppBar transparent to match homepage
+        backgroundColor: Colors.transparent,
+        elevation: 0,
+        title: Text(
+          "Adventure Details",
+          style: GoogleFonts.fredoka(color: const Color(0xFF6A1B9A)),
+        ),
+        iconTheme: const IconThemeData(color: Color(0xFF6A1B9A)),
+        //appBar: AppBar(title: const Text('Group Details')),
+      ),
+
       body: Padding(
         padding: const EdgeInsets.all(16.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            const SizedBox(height: 80), 
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Text(
                     widget.group.name,
-                    style: const TextStyle(
+                    style: GoogleFonts.quicksand(
                       fontSize: 28,
                       fontWeight: FontWeight.bold,
                     ),
