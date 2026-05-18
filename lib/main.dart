@@ -284,6 +284,7 @@ class _MyAppState extends State<MyApp> {
         builder: (innerContext) {
           // innerContext is used to solve the Navigator error
           return Scaffold(
+            backgroundColor: Colors.transparent,
             extendBodyBehindAppBar: true,
             appBar: AppBar(
               backgroundColor: Colors.transparent,
@@ -300,13 +301,15 @@ class _MyAppState extends State<MyApp> {
             ),
             body: Stack(
               children: [
-                // 1. BACKGROUND GRADIENT
-                Container(
-                  decoration: const BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topLeft,
-                      end: Alignment.bottomRight,
-                      colors: [Color(0xFFF3EEF5), Color(0xFFE1F5FE)],
+                // 1. BACKGROUND GRADIENT — must use Positioned.fill to guarantee full screen
+                Positioned.fill(
+                  child: Container(
+                    decoration: const BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [Color(0xFFF3EEF5), Color(0xFFE1F5FE)],
+                      ),
                     ),
                   ),
                 ),
@@ -333,7 +336,9 @@ class _MyAppState extends State<MyApp> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          SizedBox(height: MediaQuery.of(context).padding.top + 56),
+                          SizedBox(
+                            height: MediaQuery.of(context).padding.top + 56,
+                          ),
 
                           // 3. STYLIZED HEADER
                           Text(
@@ -539,6 +544,33 @@ class _MyAppState extends State<MyApp> {
           ),
         ),
       ),
+    );
+  }
+}
+
+// Define once, use everywhere
+class AppBackground extends StatelessWidget {
+  final Widget child;
+  const AppBackground({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Stack(
+      children: [
+        Positioned.fill(
+          // ← this is the fix
+          child: Container(
+            decoration: const BoxDecoration(
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: [Color(0xFFF3EEF5), Color(0xFFE1F5FE)],
+              ),
+            ),
+          ),
+        ),
+        child,
+      ],
     );
   }
 }
@@ -1292,292 +1324,299 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
         //appBar: AppBar(title: const Text('Group Details')),
       ),
 
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 80),
-            Row(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Expanded(
-                  child: Text(
-                    widget.group.name,
-                    style: GoogleFonts.quicksand(
-                      fontSize: 28,
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                ElevatedButton(
-                  onPressed: () => _showRenameDialog(context),
-                  child: const Text('Rename'),
-                ),
-              ],
-            ),
-            const SizedBox(height: 16),
-            Card(
-              elevation: 2,
-              child: Padding(
-                padding: const EdgeInsets.all(16.0),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Total spent',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                        Text(
-                          '\$${totalSpent.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Expenses',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                        Text(
-                          '$expenseCount',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        const Text(
-                          'Avg/person',
-                          style: TextStyle(fontSize: 14, color: Colors.grey),
-                        ),
-                        Text(
-                          '\$${averagePerPerson.toStringAsFixed(2)}',
-                          style: const TextStyle(
-                            fontSize: 20,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ],
-                ),
-              ),
-            ),
-            if (categoryTotals.isNotEmpty) ...[
-              const SizedBox(height: 12),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: categoryTotals.entries.map((entry) {
-                  return Chip(
-                    label: Text(
-                      '${entry.key}: \$${entry.value.toStringAsFixed(2)}',
-                    ),
-                  );
-                }).toList(),
-              ),
-            ],
-            const SizedBox(height: 20),
-            Expanded(
-              child: ListView(
+      body: AppBackground(
+        child: Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const SizedBox(height: 80),
+              Row(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Members',
-                    style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600),
-                  ),
-                  const SizedBox(height: 10),
-                  ElevatedButton(
-                    onPressed: () => _showAddMemberDialog(context),
-                    child: const Text('Add Member'),
-                  ),
-                  const SizedBox(height: 10),
-                  if (widget.group.members.isEmpty)
-                    const Text('No members yet. Add some!')
-                  else
-                    Card(
-                      elevation: 1,
-                      child: Column(
-                        children: widget.group.members.asMap().entries.map((
-                          entry,
-                        ) {
-                          final member = entry.value;
-                          final balance = balances[member] ?? 0;
-                          return ListTile(
-                            title: Text(member),
-                            subtitle: Text(
-                              balance >= 0
-                                  ? 'Owed: \$${balance.toStringAsFixed(2)}'
-                                  : 'Owes: \$${(-balance).toStringAsFixed(2)}',
-                              style: TextStyle(
-                                color: balance >= 0 ? Colors.green : Colors.red,
-                              ),
-                            ),
-                            trailing: IconButton(
-                              icon: const Icon(Icons.delete),
-                              onPressed: () => _removeMember(entry.key),
-                            ),
-                          );
-                        }).toList(),
+                  Expanded(
+                    child: Text(
+                      widget.group.name,
+                      style: GoogleFonts.quicksand(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
                       ),
                     ),
-                  const SizedBox(height: 24),
-                  Row(
+                  ),
+                  ElevatedButton(
+                    onPressed: () => _showRenameDialog(context),
+                    child: const Text('Rename'),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 16),
+              Card(
+                elevation: 2,
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      const Text(
-                        'Expenses',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-                      Wrap(
-                        spacing: 8,
-                        runSpacing: 8,
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          ElevatedButton(
-                            onPressed: widget.group.members.isNotEmpty
-                                ? () => _showSettleUpDialog(context)
-                                : null,
-                            child: const Text('Settle Up'),
+                          const Text(
+                            'Total spent',
+                            style: TextStyle(fontSize: 14, color: Colors.grey),
                           ),
-                          ElevatedButton(
-                            onPressed: () => _showAnalyticsDialog(context),
-                            child: const Text('Analytics'),
+                          Text(
+                            '\$${totalSpent.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
-                          ElevatedButton(
-                            onPressed: widget.group.members.isNotEmpty
-                                ? () => _showAddExpenseDialog(context)
-                                : null,
-                            child: const Text('Add Expense'),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Expenses',
+                            style: TextStyle(fontSize: 14, color: Colors.grey),
+                          ),
+                          Text(
+                            '$expenseCount',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'Avg/person',
+                            style: TextStyle(fontSize: 14, color: Colors.grey),
+                          ),
+                          Text(
+                            '\$${averagePerPerson.toStringAsFixed(2)}',
+                            style: const TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
                           ),
                         ],
                       ),
                     ],
                   ),
-                  const SizedBox(height: 12),
-                  TextField(
-                    decoration: const InputDecoration(
-                      hintText: 'Search expenses or payer',
-                      prefixIcon: Icon(Icons.search),
-                    ),
-                    onChanged: (value) {
-                      setState(() {
-                        expenseSearchQuery = value;
-                      });
-                    },
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    children: [
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          initialValue: selectedExpenseCategory,
-                          decoration: const InputDecoration(
-                            labelText: 'Category filter',
-                          ),
-                          items: _expenseCategoryFilters.map((category) {
-                            return DropdownMenuItem(
-                              value: category,
-                              child: Text(category),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            if (value == null) return;
-                            setState(() {
-                              selectedExpenseCategory = value;
-                            });
-                          },
-                        ),
-                      ),
-                      const SizedBox(width: 12),
-                      Expanded(
-                        child: DropdownButtonFormField<String>(
-                          initialValue: selectedDateFilter,
-                          decoration: const InputDecoration(
-                            labelText: 'Date filter',
-                          ),
-                          items: _dateFilters.map((filter) {
-                            return DropdownMenuItem(
-                              value: filter,
-                              child: Text(filter),
-                            );
-                          }).toList(),
-                          onChanged: (value) {
-                            if (value == null) return;
-                            setState(() {
-                              selectedDateFilter = value;
-                            });
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 16),
-                  ...filteredExpenses.map((expense) {
-                    return Card(
-                      margin: const EdgeInsets.only(bottom: 12),
-                      child: ListTile(
-                        title: Text(expense.description),
-                        subtitle: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text('Paid by: ${expense.paidBy}'),
-                            Text('Category: ${expense.category}'),
-                            Text(
-                              'Split among: ${expense.splitAmong.join(', ')}',
-                            ),
-                            Text('Date: ${expense.formattedDate}'),
-                          ],
-                        ),
-                        trailing: SizedBox(
-                          width: 70,
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            crossAxisAlignment: CrossAxisAlignment.end,
-                            children: [
-                              Text(
-                                '\$${expense.amount.toStringAsFixed(2)}',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              IconButton(
-                                padding: EdgeInsets.zero,
-                                constraints: const BoxConstraints(),
-                                icon: const Icon(Icons.delete),
-                                onPressed: () {
-                                  final index = widget.group.expenses.indexOf(
-                                    expense,
-                                  );
-                                  if (index >= 0) {
-                                    _removeExpense(index);
-                                  }
-                                },
-                              ),
-                            ],
-                          ),
-                        ),
+                ),
+              ),
+              if (categoryTotals.isNotEmpty) ...[
+                const SizedBox(height: 12),
+                Wrap(
+                  spacing: 8,
+                  runSpacing: 8,
+                  children: categoryTotals.entries.map((entry) {
+                    return Chip(
+                      label: Text(
+                        '${entry.key}: \$${entry.value.toStringAsFixed(2)}',
                       ),
                     );
-                  }),
-                ],
+                  }).toList(),
+                ),
+              ],
+              const SizedBox(height: 20),
+              Expanded(
+                child: ListView(
+                  children: [
+                    const Text(
+                      'Members',
+                      style: TextStyle(
+                        fontSize: 18,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    ElevatedButton(
+                      onPressed: () => _showAddMemberDialog(context),
+                      child: const Text('Add Member'),
+                    ),
+                    const SizedBox(height: 10),
+                    if (widget.group.members.isEmpty)
+                      const Text('No members yet. Add some!')
+                    else
+                      Card(
+                        elevation: 1,
+                        child: Column(
+                          children: widget.group.members.asMap().entries.map((
+                            entry,
+                          ) {
+                            final member = entry.value;
+                            final balance = balances[member] ?? 0;
+                            return ListTile(
+                              title: Text(member),
+                              subtitle: Text(
+                                balance >= 0
+                                    ? 'Owed: \$${balance.toStringAsFixed(2)}'
+                                    : 'Owes: \$${(-balance).toStringAsFixed(2)}',
+                                style: TextStyle(
+                                  color: balance >= 0
+                                      ? Colors.green
+                                      : Colors.red,
+                                ),
+                              ),
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete),
+                                onPressed: () => _removeMember(entry.key),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        const Text(
+                          'Expenses',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                        Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            ElevatedButton(
+                              onPressed: widget.group.members.isNotEmpty
+                                  ? () => _showSettleUpDialog(context)
+                                  : null,
+                              child: const Text('Settle Up'),
+                            ),
+                            ElevatedButton(
+                              onPressed: () => _showAnalyticsDialog(context),
+                              child: const Text('Analytics'),
+                            ),
+                            ElevatedButton(
+                              onPressed: widget.group.members.isNotEmpty
+                                  ? () => _showAddExpenseDialog(context)
+                                  : null,
+                              child: const Text('Add Expense'),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 12),
+                    TextField(
+                      decoration: const InputDecoration(
+                        hintText: 'Search expenses or payer',
+                        prefixIcon: Icon(Icons.search),
+                      ),
+                      onChanged: (value) {
+                        setState(() {
+                          expenseSearchQuery = value;
+                        });
+                      },
+                    ),
+                    const SizedBox(height: 12),
+                    Row(
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            initialValue: selectedExpenseCategory,
+                            decoration: const InputDecoration(
+                              labelText: 'Category filter',
+                            ),
+                            items: _expenseCategoryFilters.map((category) {
+                              return DropdownMenuItem(
+                                value: category,
+                                child: Text(category),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value == null) return;
+                              setState(() {
+                                selectedExpenseCategory = value;
+                              });
+                            },
+                          ),
+                        ),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: DropdownButtonFormField<String>(
+                            initialValue: selectedDateFilter,
+                            decoration: const InputDecoration(
+                              labelText: 'Date filter',
+                            ),
+                            items: _dateFilters.map((filter) {
+                              return DropdownMenuItem(
+                                value: filter,
+                                child: Text(filter),
+                              );
+                            }).toList(),
+                            onChanged: (value) {
+                              if (value == null) return;
+                              setState(() {
+                                selectedDateFilter = value;
+                              });
+                            },
+                          ),
+                        ),
+                      ],
+                    ),
+                    const SizedBox(height: 16),
+                    ...filteredExpenses.map((expense) {
+                      return Card(
+                        margin: const EdgeInsets.only(bottom: 12),
+                        child: ListTile(
+                          title: Text(expense.description),
+                          subtitle: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text('Paid by: ${expense.paidBy}'),
+                              Text('Category: ${expense.category}'),
+                              Text(
+                                'Split among: ${expense.splitAmong.join(', ')}',
+                              ),
+                              Text('Date: ${expense.formattedDate}'),
+                            ],
+                          ),
+                          trailing: SizedBox(
+                            width: 70,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              crossAxisAlignment: CrossAxisAlignment.end,
+                              children: [
+                                Text(
+                                  '\$${expense.amount.toStringAsFixed(2)}',
+                                  style: const TextStyle(
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                IconButton(
+                                  padding: EdgeInsets.zero,
+                                  constraints: const BoxConstraints(),
+                                  icon: const Icon(Icons.delete),
+                                  onPressed: () {
+                                    final index = widget.group.expenses.indexOf(
+                                      expense,
+                                    );
+                                    if (index >= 0) {
+                                      _removeExpense(index);
+                                    }
+                                  },
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      );
+                    }),
+                  ],
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
