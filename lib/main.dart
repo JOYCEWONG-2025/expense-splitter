@@ -278,10 +278,8 @@ class _MyAppState extends State<MyApp> {
       supportedLocales: const [Locale('en', 'US')],
       theme: ThemeData(useMaterial3: true),
       // This helps with the "native app" feel by removing the scroll glow
-      scrollBehavior: const MaterialScrollBehavior().copyWith(
-        scrollbars: true,
-      ),
-      
+      scrollBehavior: const MaterialScrollBehavior().copyWith(scrollbars: true),
+
       home: Builder(
         builder: (innerContext) {
           // innerContext is used to solve the Navigator error
@@ -327,90 +325,97 @@ class _MyAppState extends State<MyApp> {
                   color: Colors.blue.withOpacity(0.08),
                 ),
 
-                Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 24.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const SizedBox(height: 100),
+                Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 24.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          SizedBox(height: MediaQuery.of(context).padding.top + 56),
 
-                      // 3. STYLIZED HEADER
-                      Text(
-                        "Wonderland Ledger ✨",
-                        style: GoogleFonts.fredoka(
-                          fontSize: 34,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF6A1B9A),
-                          shadows: [
-                            const Shadow(
-                              blurRadius: 10,
-                              color: Colors.black12,
-                              offset: Offset(2, 2),
-                            ),
-                          ],
-                        ),
-                      ),
-                      Text(
-                        "Track your carrot coins together",
-                        style: GoogleFonts.fredoka(
-                          fontSize: 16,
-                          color: Colors.purple.withOpacity(0.5),
-                        ),
-                      ),
-
-                      const SizedBox(height: 30),
-
-                      // 4. ACTION BUTTON
-                      ElevatedButton.icon(
-                        onPressed: () => showAddGroupDialog(innerContext),
-                        icon: const Icon(Icons.add_circle_outline),
-                        label: const Text('Start New Adventure'),
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF9B5DE5),
-                          foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 20,
-                            vertical: 12,
-                          ),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          elevation: 6,
-                        ),
-                      ),
-
-                      const SizedBox(height: 40),
-
-                      Text(
-                        'Your Magical Groups',
-                        style: GoogleFonts.fredoka(
-                          fontSize: 20,
-                          fontWeight: FontWeight.w600,
-                        ),
-                      ),
-
-                      const SizedBox(height: 15),
-
-                      // 5. GROUP LIST
-                      Expanded(
-                        child: isLoading
-                            ? const Center(child: CircularProgressIndicator())
-                            : groups.isEmpty
-                            ? Center(
-                                child: Text(
-                                  'No groups yet. Tap above to start!',
-                                  style: GoogleFonts.fredoka(),
+                          // 3. STYLIZED HEADER
+                          Text(
+                            "Wonderland Ledger ✨",
+                            style: GoogleFonts.fredoka(
+                              fontSize: 34,
+                              fontWeight: FontWeight.bold,
+                              color: const Color(0xFF6A1B9A),
+                              shadows: [
+                                const Shadow(
+                                  blurRadius: 10,
+                                  color: Colors.black12,
+                                  offset: Offset(2, 2),
                                 ),
-                              )
-                            : ListView.builder(
-                                padding: EdgeInsets.zero,
-                                physics: const BouncingScrollPhysics(),
-                                itemCount: groups.length,
-                                itemBuilder: (context, index) =>
-                                    _buildGroupCard(innerContext, index),
+                              ],
+                            ),
+                          ),
+                          Text(
+                            "Track your carrot coins together",
+                            style: GoogleFonts.fredoka(
+                              fontSize: 16,
+                              color: Colors.purple.withOpacity(0.5),
+                            ),
+                          ),
+
+                          const SizedBox(height: 30),
+
+                          // 4. ACTION BUTTON
+                          ElevatedButton.icon(
+                            onPressed: () => showAddGroupDialog(innerContext),
+                            icon: const Icon(Icons.add_circle_outline),
+                            label: const Text('Start New Adventure'),
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: const Color(0xFF9B5DE5),
+                              foregroundColor: Colors.white,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                                vertical: 12,
                               ),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(20),
+                              ),
+                              elevation: 6,
+                            ),
+                          ),
+
+                          const SizedBox(height: 40),
+
+                          Text(
+                            'Your Magical Groups',
+                            style: GoogleFonts.fredoka(
+                              fontSize: 20,
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+
+                          const SizedBox(height: 15),
+
+                          // 5. GROUP LIST
+                          Expanded(
+                            child: isLoading
+                                ? const Center(
+                                    child: CircularProgressIndicator(),
+                                  )
+                                : groups.isEmpty
+                                ? Center(
+                                    child: Text(
+                                      'No groups yet. Tap above to start!',
+                                      style: GoogleFonts.fredoka(),
+                                    ),
+                                  )
+                                : ListView.builder(
+                                    padding: EdgeInsets.zero,
+                                    physics: const BouncingScrollPhysics(),
+                                    itemCount: groups.length,
+                                    itemBuilder: (context, index) =>
+                                        _buildGroupCard(innerContext, index),
+                                  ),
+                          ),
+                        ],
                       ),
-                    ],
+                    ),
                   ),
                 ),
 
@@ -1198,7 +1203,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
                       ? () {
                           widget.onRename(controller.text);
                           widget.group.name = controller.text.trim();
-                          this.setState(() {});  
+                          this.setState(() {});
                           Navigator.pop(context);
                         }
                       : null,
@@ -1292,7 +1297,7 @@ class _GroupDetailPageState extends State<GroupDetailPage> {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            const SizedBox(height: 80), 
+            const SizedBox(height: 80),
             Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
