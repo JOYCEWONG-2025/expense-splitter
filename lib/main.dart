@@ -277,6 +277,11 @@ class _MyAppState extends State<MyApp> {
       localizationsDelegates: GlobalMaterialLocalizations.delegates,
       supportedLocales: const [Locale('en', 'US')],
       theme: ThemeData(useMaterial3: true),
+      // This helps with the "native app" feel by removing the scroll glow
+      scrollBehavior: const MaterialScrollBehavior().copyWith(
+        scrollbars: true,
+      ),
+      
       home: Builder(
         builder: (innerContext) {
           // innerContext is used to solve the Navigator error
