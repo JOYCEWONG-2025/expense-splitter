@@ -236,7 +236,7 @@ expense_splitter/
 
 ---
 
-### ✅ Completed Milestones Summary
+###  Completed Milestones Summary
 
 | Phase | What Was Delivered |
 |-------|--------------------|
