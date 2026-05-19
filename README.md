@@ -257,7 +257,7 @@ expense_splitter/
 ### Install
 
 ```bash
-git clone https://github.com/yourusername/expense-splitter.git
+git clone [https://github.com/yourusername/expense-splitter](https://github.com/JOYCEWONG-2025/expense-splitter).git
 cd expense-splitter/expense_splitter
 flutter pub get
 ```
