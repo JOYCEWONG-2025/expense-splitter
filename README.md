@@ -1,4 +1,6 @@
 <<<<<<< HEAD
+Link to access: https://wonderland-expense-splitter.web.app/
+
 # Expense Splitter 💰
 
 A comprehensive Flutter application for splitting bills and expenses among friends, designed for trips, meals, and shared costs. This app provides real-world expense tracking with advanced features like categories, search, filters, and persistent data storage.
