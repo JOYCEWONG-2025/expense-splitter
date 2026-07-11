@@ -147,7 +147,7 @@ The app was built iteratively in phases, starting from basic functionality and a
 
 **Testing**: Restarted app multiple times, verified data persistence.
 
-### Phase 6. Settle Up Calculator** 💸
+### Phase 6: Settle Up Calculator** 💸
 **Why**: The most requested feature in expense apps - shows minimum payments to zero out balances.
 **How**: "Settle Up" button calculates and displays who pays whom and how much.
 **Implementation**: Algorithm separates creditors/debtors, matches them to minimize transfers.
