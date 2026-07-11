@@ -6,6 +6,52 @@ Link to access: https://wonderland-expense-splitter.web.app/
 
 A comprehensive Flutter application for splitting bills and expenses among friends, designed for trips, meals, and shared costs. This app provides real-world expense tracking with advanced features like categories, search, filters, and persistent data storage.
 
+
+## 📖 Main Usage
+
+### Creating Groups
+1. Tap "➕ Create Group"
+2. Enter group name
+3. Tap "Add"
+
+### Managing Members
+1. Open a group
+2. Tap "Add Member"
+3. Enter member name
+4. Use delete button to remove members
+
+### Adding Expenses
+1. In group details, tap "Add Expense"
+2. Fill description, amount, select payer
+3. Choose category and date
+4. Select who shares the expense
+5. Tap "Add"
+
+### Viewing Balances
+- Member balances show in green (owed money) or red (owes money)
+- Summary card shows total spent, expense count, and average per person
+
+### Searching & Filtering
+- Use search bar to find expenses by description or payer
+- Filter by category or date range
+- Results update in real-time
+
+## 📸 Screenshots
+
+*(Screenshots would be added here in a real repository)*
+
+- Main screen with group list
+- Group details with members and expenses
+- Add expense dialog with all options
+- Filtered expense list
+
+### 🎨 Interactive Diary-Style Enhancements: Rabbit-Themed Expense Diary App
+**Headline**: Transform Expense Splitter into a Cute, Animated Diary Game – Rabbit Slides Through Categories, Unfolds Receipts, and Builds Storybook Summaries!
+
+**Workflow Overview**: Click the paw icon at top-right corner. Homepage features a rabbit sliding on a skateboard across category backgrounds (Food with food icons, Transport with roads, etc.). User selects category → Calendar popup for date selection → Rabbit "arrives" at date → Group creation dialog with rabbits forming a circle (assign names to rabbits/people) → Expense addition with receipt unfolding animation (description, amount, payer, split checkboxes with rabbit names, image upload) → Analytics with animated charts → Settle-up with visual payments → Diary summary as flipped calendar book with expense cards and feedback (e.g., "Smart saver!" or "Oh no, big spender!").
+
+**Functionality**: Solves the problem by making expense tracking engaging and visual, like a game/diary. Core logic (groups, expenses, balances) remains unchanged; adds animations and themes for better UX without breaking features. Works on web/mobile with lightweight assets.
+
 ## 📋 Table of Contents
 
 - [Features](#features)
@@ -330,52 +376,10 @@ The app was built iteratively in phases, starting from basic functionality and a
    flutter run -d chrome
    ```
 
-## 📖 Usage
-
-### Creating Groups
-1. Tap "➕ Create Group"
-2. Enter group name
-3. Tap "Add"
-
-### Managing Members
-1. Open a group
-2. Tap "Add Member"
-3. Enter member name
-4. Use delete button to remove members
-
-### Adding Expenses
-1. In group details, tap "Add Expense"
-2. Fill description, amount, select payer
-3. Choose category and date
-4. Select who shares the expense
-5. Tap "Add"
-
-### Viewing Balances
-- Member balances show in green (owed money) or red (owes money)
-- Summary card shows total spent, expense count, and average per person
-
-### Searching & Filtering
-- Use search bar to find expenses by description or payer
-- Filter by category or date range
-- Results update in real-time
-
-## 📸 Screenshots
-
-*(Screenshots would be added here in a real repository)*
-
-- Main screen with group list
-- Group details with members and expenses
-- Add expense dialog with all options
-- Filtered expense list
 
 ## 🚀 Future Enhancements
 
 ### 🎨 Interactive Diary-Style Enhancements: Rabbit-Themed Expense Diary App
-**Headline**: Transform Expense Splitter into a Cute, Animated Diary Game – Rabbit Slides Through Categories, Unfolds Receipts, and Builds Storybook Summaries!
-
-**Workflow Overview**: Homepage features a rabbit sliding on a skateboard across category backgrounds (Food with food icons, Transport with roads, etc.). User selects category → Calendar popup for date selection → Rabbit "arrives" at date → Group creation dialog with rabbits forming a circle (assign names to rabbits/people) → Expense addition with receipt unfolding animation (description, amount, payer, split checkboxes with rabbit names, image upload) → Analytics with animated charts → Settle-up with visual payments → Diary summary as flipped calendar book with expense cards and feedback (e.g., "Smart saver!" or "Oh no, big spender!").
-
-**Functionality**: Solves the problem by making expense tracking engaging and visual, like a game/diary. Core logic (groups, expenses, balances) remains unchanged; adds animations and themes for better UX without breaking features. Works on web/mobile with lightweight assets.
 
 **Code Quality**: Clean, readable additions using Flutter best practices. New classes (`AnimatedHomepage`, `DiarySummaryPage`) are modular. Uses `Lottie` for animations, `Builder` for context fixes. No breaking changes – integrates seamlessly.
 
