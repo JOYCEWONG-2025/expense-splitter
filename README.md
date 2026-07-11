@@ -41,10 +41,29 @@ A comprehensive Flutter application for splitting bills and expenses among frien
 *(Screenshots would be added here in a real repository)*
 
 - Main screen with group list
+<img width="1918" height="907" alt="image" src="https://github.com/user-attachments/assets/24150db1-c16f-4089-bd00-a0526c532594" />
+
 - Group details with members and expenses
+<img width="1918" height="910" alt="image" src="https://github.com/user-attachments/assets/efab3823-f435-47f4-a9fd-0094e23b3c92" />
+
 - Add expense dialog with all options
+<img width="1918" height="906" alt="image" src="https://github.com/user-attachments/assets/b7eb26e5-abbc-4bc9-88a2-fe70c80762de" />
+
 - Filtered expense list
-<img width="1918" height="907" alt="image" src="https://github.com/user-attachments/assets/f3af376f-d670-4742-a380-257408be227e" />
+<img width="1918" height="918" alt="image" src="https://github.com/user-attachments/assets/bd1335a5-2bad-4856-84d7-08667e1a660a" />
+
+- Homepage features a rabbit sliding on a skateboard across category backgrounds
+<img width="1918" height="907" alt="image" src="https://github.com/user-attachments/assets/4a029616-ca3e-45b4-85a2-f801a326446e" />
+
+- Pop-up calendar
+<img width="1918" height="908" alt="image" src="https://github.com/user-attachments/assets/115472cb-8307-4728-9163-21ef2eb32d5f" />
+
+- Unfolding receipts
+<img width="1812" height="896" alt="image" src="https://github.com/user-attachments/assets/bacc97d4-b026-4477-8626-ca242622eaa1" />
+
+- Diary summary with analytics chart and comment
+<img width="1911" height="905" alt="image" src="https://github.com/user-attachments/assets/d406dbc7-5caf-49ee-86b5-997e38d17c43" />
+
 
 
 ### 🎨 Interactive Diary-Style Enhancements: Rabbit-Themed Expense Diary App
