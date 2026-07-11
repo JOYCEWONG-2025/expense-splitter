@@ -44,6 +44,8 @@ A comprehensive Flutter application for splitting bills and expenses among frien
 - Group details with members and expenses
 - Add expense dialog with all options
 - Filtered expense list
+<img width="1918" height="907" alt="image" src="https://github.com/user-attachments/assets/f3af376f-d670-4742-a380-257408be227e" />
+
 
 ### 🎨 Interactive Diary-Style Enhancements: Rabbit-Themed Expense Diary App
 **Headline**: Transform Expense Splitter into a Cute, Animated Diary Game – Rabbit Slides Through Categories, Unfolds Receipts, and Builds Storybook Summaries!
