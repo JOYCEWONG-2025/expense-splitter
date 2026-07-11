@@ -147,7 +147,7 @@ The app was built iteratively in phases, starting from basic functionality and a
 
 **Testing**: Restarted app multiple times, verified data persistence.
 
-### 7. Settle Up Calculator** 💸
+### 6. Settle Up Calculator** 💸
 **Why**: The most requested feature in expense apps - shows minimum payments to zero out balances.
 **How**: "Settle Up" button calculates and displays who pays whom and how much.
 **Implementation**: Algorithm separates creditors/debtors, matches them to minimize transfers.
@@ -166,7 +166,7 @@ The app was built iteratively in phases, starting from basic functionality and a
 
 **Solution**: Greedy algorithm sorts creditors/debtors by amount, matches largest first for optimal transfers.
 
-### Phase 8: Receipt Photo Attachments 📸
+### Phase 7: Receipt Photo Attachments 📸
 **Objective**: Allow users to attach receipt photos to expenses for better record-keeping.
 
 **Steps**:
@@ -192,7 +192,7 @@ The app was built iteratively in phases, starting from basic functionality and a
 
 **Solution**: Used base64 encoding for simple persistence, added optional image display.
 
-### Phase 9: Spending Analytics & Charts 📊
+### Phase 8: Spending Analytics & Charts 📊
 **Objective**: Provide visual insights into spending patterns with charts.
 
 **Steps**:
