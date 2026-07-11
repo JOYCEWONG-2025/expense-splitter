@@ -1,6 +1,7 @@
 <<<<<<< HEAD
 
 Link to access: https://wonderland-expense-splitter.web.app/
+Explanation: https://drive.google.com/drive/folders/1a9o9pXXnoHdHylm5hZV_T0diPN51PVbS
 
 # Expense Splitter 💰
 
